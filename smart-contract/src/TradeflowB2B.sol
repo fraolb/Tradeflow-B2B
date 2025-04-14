@@ -7,14 +7,27 @@ contract TradeflowB2B {
     address public owner;
     mapping(address => bool) public allowedStablecoins; // Whitelisted stablecoins
 
+    enum TxType {
+        SENT,
+        RECEIVED
+    }
+
     struct Transaction {
-        address receiver;
+        address counterparty; // The other address in the transaction
         address stablecoin;
         uint256 amount;
         uint256 timestamp;
+        uint256 blockNumber;
+        string reason;
+        TxType txType;
     }
 
-    mapping(address => Transaction[]) public userTransactions; // Store user transactions
+    struct UserBook {
+        string name;
+        Transaction[] transactions;
+    }
+
+    mapping(address => UserBook) private userBooks; // Store user transactions
 
     event PaymentMade(
         address indexed payer,
@@ -23,6 +36,8 @@ contract TradeflowB2B {
         uint256 amount,
         uint256 timestamp
     );
+
+    event NameUpdated(address indexed user, string name);
 
     constructor(address[] memory _stablecoins) {
         owner = msg.sender;
@@ -43,14 +58,22 @@ contract TradeflowB2B {
         allowedStablecoins[token] = status;
     }
 
+    function addName(string memory name) external {
+        require(bytes(name).length > 0, "Name cannot be empty");
+        userBooks[msg.sender].name = name;
+        emit NameUpdated(msg.sender, name);
+    }
+
     function pay(
         address stablecoin,
         address receiver,
-        uint256 amount
+        uint256 amount,
+        string memory reason
     ) external {
         require(allowedStablecoins[stablecoin], "Token not allowed");
         require(amount > 0, "Amount must be greater than 0");
         require(receiver != address(0), "Invalid receiver");
+        require(receiver != msg.sender, "Cannot send to yourself");
 
         IERC20 token = IERC20(stablecoin);
         require(
@@ -58,14 +81,32 @@ contract TradeflowB2B {
             "Transfer failed"
         );
 
-        Transaction memory newTransaction = Transaction({
-            receiver: receiver,
-            stablecoin: stablecoin,
-            amount: amount,
-            timestamp: block.timestamp
-        });
+        // Record for sender
+        userBooks[msg.sender].transactions.push(
+            Transaction({
+                counterparty: receiver,
+                stablecoin: stablecoin,
+                amount: amount,
+                timestamp: block.timestamp,
+                blockNumber: block.number,
+                reason: reason,
+                txType: TxType.SENT
+            })
+        );
 
-        userTransactions[msg.sender].push(newTransaction);
+        // Record for receiver
+        userBooks[receiver].transactions.push(
+            Transaction({
+                counterparty: msg.sender,
+                stablecoin: stablecoin,
+                amount: amount,
+                timestamp: block.timestamp,
+                blockNumber: block.number,
+                reason: reason,
+                txType: TxType.RECEIVED
+            })
+        );
+
         emit PaymentMade(
             msg.sender,
             receiver,
@@ -78,6 +119,10 @@ contract TradeflowB2B {
     function getUserTransactions(
         address user
     ) external view returns (Transaction[] memory) {
-        return userTransactions[user];
+        return userBooks[user].transactions;
+    }
+
+    function getUserName(address user) external view returns (string memory) {
+        return userBooks[user].name;
     }
 }
