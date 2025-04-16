@@ -57,7 +57,10 @@ export default function Home() {
               </div>
               <span>Swap</span>
             </Button>
-            <Button className="block h-12 items-center px-4 py-2 bg-transparent text-gray-600 shadow-none rounded-none hover:bg-gray-100 active:bg-gray-200">
+            <Button
+              onClick={() => router.push("/receive")}
+              className="block h-12 items-center px-4 py-2 bg-transparent text-gray-600 shadow-none rounded-none hover:bg-gray-100 active:bg-gray-200"
+            >
               <div className="flex justify-center">
                 <ArrowDownIcon className="w-5 h-5" />
               </div>
