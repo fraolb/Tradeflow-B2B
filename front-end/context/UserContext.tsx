@@ -3,7 +3,11 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import Tx
+import { TxData } from "@/types/transaction";
+import {
+  getNameFromContract,
+  getTxsFromContract,
+} from "@/lib/ContractFunctions";
 
 interface UserContextType {
   name: string | null;
@@ -25,7 +29,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
     setLoading(true);
     try {
-      // Replace these with actual smart contract calls
       const fetchedName = await getNameFromContract(address);
       const fetchedTxs = await getTxsFromContract(address);
 
