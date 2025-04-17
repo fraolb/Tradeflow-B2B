@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { TransactionReceipt } from "@/components/TransactionReceiptPDFForm";
 import dynamic from "next/dynamic";
+import { useUser } from "@/context/UserContext";
 
 import { writeContract, waitForTransactionReceipt } from "@wagmi/core";
 import { parseAbiItem } from "viem";
@@ -19,6 +21,8 @@ const PDFViewer = dynamic(
 
 const page = () => {
   const cUSD = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
+  const router = useRouter();
+  const { name } = useUser();
 
   const [address, setAddress] = useState("");
   const [amount, setAmount] = useState("");
@@ -36,6 +40,9 @@ const page = () => {
     hash: "0xabc123def456789...",
   };
   const [sentTx, setSentTx] = useState<typeof mockTransaction | null>(null);
+
+  const shortenAddress = (address: string) =>
+    `${address.slice(0, 6)}...${address.slice(-4)}`;
 
   const send = async () => {
     setLoading(true);
@@ -89,34 +96,70 @@ const page = () => {
     return (
       <div className="bg-white rounded-[20px] px-4 py-6">
         {sentTx && (
-          <div className="space-y-2 text-sm">
-            <p>
-              <strong>From:</strong> {sentTx.from}
+          <div className="max-w-md mx-auto p-6 border rounded-lg shadow-md">
+            <h1 className="text-2xl font-bold text-center">Tradeflow B2B</h1>
+            <p className="text-center text-gray-600 mb-4">
+              Transaction Receipt
             </p>
-            <p>
-              <strong>To:</strong> {sentTx.to}
-            </p>
-            <p>
-              <strong>Reason:</strong> {sentTx.reason}
-            </p>
-            <p>
-              <strong>Amount:</strong> ${sentTx.amount}
-            </p>
-            <p>
-              <strong>Date:</strong> {sentTx.date}
-            </p>
-            <a
-              href={sentTx.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-700 underline"
-            >
-              View on Block Explorer
-            </a>
+
+            <div className="bg-green-100 text-right text-lg font-semibold p-4 rounded mb-4">
+              Amount Paid:{" "}
+              <span className="text-black">${sentTx.amount.toFixed(2)}</span>
+            </div>
+
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <strong>From:</strong>{" "}
+                <div>{name || shortenAddress(sentTx.from)}</div>
+              </div>
+              <div className="flex justify-between">
+                <strong>To:</strong> <div>{shortenAddress(sentTx.to)}</div>
+              </div>
+              <div className="flex justify-between">
+                <strong>Date:</strong> <div>{sentTx.date.slice(0, 10)}</div>
+              </div>
+              <div className="flex justify-between">
+                <strong>Reason:</strong> <div>{sentTx.reason}</div>
+              </div>
+            </div>
+
+            <hr className="my-4" />
+
+            <div className="text-sm flex justify-between">
+              <strong>Transaction Hash:</strong>
+
+              <a
+                href={sentTx.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-700 underline"
+              >
+                {shortenAddress(sentTx.hash)}
+              </a>
+            </div>
           </div>
         )}
 
-        <div className="flex justify-between mt-4">
+        <div className="flex justify-between gap-2 mt-4">
+          {sentTx !== null && (
+            <PDFDownloadLink
+              document={<TransactionReceipt transaction={sentTx} />}
+              fileName="transaction_report.pdf"
+            >
+              {({ loading }) =>
+                loading ? (
+                  <button className="bg-gray-300 p-2 rounded">
+                    Preparing...
+                  </button>
+                ) : (
+                  <button className="bg-green-500 text-white p-2 rounded hover:bg-opacity-80">
+                    Download Report PDF
+                  </button>
+                )
+              }
+            </PDFDownloadLink>
+          )}
+
           <button
             className="bg-blue-500 text-white p-2 rounded hover:bg-opacity-80"
             onClick={() => {
@@ -129,8 +172,16 @@ const page = () => {
             Make Another Transaction
           </button>
         </div>
-
-        <button className="mt-4 text-blue-700 underline">Return to Home</button>
+        <div className="flex justify-center">
+          <button
+            className="mt-4 p-2 px-4 text-black bg-gray-200 shadow-lg rounded"
+            onClick={() => {
+              router.push("/");
+            }}
+          >
+            Return to Home
+          </button>
+        </div>
       </div>
     );
   }
@@ -195,7 +246,7 @@ const page = () => {
       {/* Pay Button */}
       <button
         type="submit"
-        className="bg-green-700 text-white rounded-[14px] py-3 font-semibold hover:bg-black hover:text-white transition"
+        className="bg-green-700 text-white rounded-[14px] py-3 font-semibold hover:bg-green-800 hover:text-white transition"
       >
         {loading ? (
           <div className="flex items-center justify-center">
