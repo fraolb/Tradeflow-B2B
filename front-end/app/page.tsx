@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useConnect, useAccount } from "wagmi";
 import { injected } from "wagmi/connectors";
+import { useUser } from "@/context/UserContext";
 
 import {
   ArrowUpIcon,
@@ -17,10 +18,12 @@ import {
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import TransactionCard from "@/components/TransactionCard";
 
 export default function Home() {
   const router = useRouter();
   const { connect } = useConnect();
+  const { name, txs, loading, refetch } = useUser();
 
   useEffect(() => {
     if (window.ethereum && window.ethereum.isMiniPay) {
@@ -31,7 +34,6 @@ export default function Home() {
   return (
     <div>
       <div className="w-full flex flex-col space-y-4">
-        {" "}
         <Card className="w-full p-4 bg-gray-50 rounded-4xl">
           <Card
             style={{ backgroundColor: "rgb(253,255,127)" }}
@@ -73,6 +75,16 @@ export default function Home() {
             <h3 className="font-bold font-mono">Latest Transactions</h3>
             <div className="font-light">See all</div>
           </div>
+          <div>
+            {loading && (
+              <Card className="w-full bg-gray-50 flex flex-row justify-beteween px-2 py-2 mb-2">
+                Loading
+              </Card>
+            )}
+          </div>
+          {txs.map((tx, index) => (
+            <TransactionCard key={index} Tx={tx} />
+          ))}
           <Card className="w-full bg-gray-50 flex flex-row justify-beteween px-2 py-2 mb-2">
             <div className="text-red-700 pt-1">
               <ArrowUpCircleIcon className="w-10 h-10" />
