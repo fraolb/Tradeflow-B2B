@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useConnect, useAccount } from "wagmi";
+import { useConnect, useAccount, useBalance } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useUser } from "@/context/UserContext";
+import { formatEther } from "viem";
 
 import {
   ArrowUpIcon,
@@ -22,8 +23,11 @@ import TransactionCard from "@/components/TransactionCard";
 
 export default function Home() {
   const router = useRouter();
+  const { address } = useAccount();
   const { connect } = useConnect();
-  const { name, txs, loading, refetch } = useUser();
+  const { name, txs, cUSDAmount, cEURAmount, loading, refetch } = useUser();
+  const { data: getCelo } = useBalance({ address });
+  const getCeloAmount = getCelo ? formatEther(getCelo.value) : "0";
 
   useEffect(() => {
     if (window.ethereum && window.ethereum.isMiniPay) {
@@ -41,7 +45,7 @@ export default function Home() {
           >
             <div>USD</div>
             <div className="text-sm">1 USD ~ 0.98 Eur ~ 0.95 GBP</div>
-            <div className="text-4xl pt-4">$ 50</div>
+            <div className="text-4xl pt-4">$ {cUSDAmount}</div>
           </Card>
           <div className="w-full grid grid-cols-3 divide-x divide-gray-400">
             <Button
@@ -121,7 +125,7 @@ export default function Home() {
               </div>
 
               <div className="block">cUSD</div>
-              <span className="text-green-700">250 $</span>
+              <span className="text-green-700">{cUSDAmount} $</span>
             </Card>
             <Card className="px-2 py-2 mb-2 gap-0 bg-gray-50">
               <div className="text-blue-700 pt-1">
@@ -129,7 +133,7 @@ export default function Home() {
               </div>
 
               <div className="block">cEur</div>
-              <span className="text-green-700">120 $</span>
+              <span className="text-green-700">{cEURAmount} €</span>
             </Card>
             <Card className="px-2 py-2 mb-2 gap-0 bg-gray-50">
               <div className="text-yellow-400 pt-1">
@@ -137,7 +141,10 @@ export default function Home() {
               </div>
 
               <div className="block">Celo</div>
-              <span className="text-green-700">50 $</span>
+              <span className="text-green-700">
+                {" "}
+                {Number(getCeloAmount).toFixed(2)} CELO
+              </span>
             </Card>
           </div>
         </div>

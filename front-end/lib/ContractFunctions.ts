@@ -8,7 +8,9 @@ import {
   writeContract,
   waitForTransactionReceipt,
 } from "@wagmi/core";
+import { formatUnits } from "viem";
 import TradeflowB2B from "@/ABI/TradeflowB2B.json";
+import cUSDABI from "@/ABI/cUSD.json";
 
 const CONTRACT_ADDRESS = "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13";
 
@@ -70,4 +72,20 @@ export const payUser = async ({
   });
 
   return receipt;
+};
+
+export const getTokenAmount = async (
+  address: string,
+  token: string
+): Promise<string> => {
+  const result = await readContract(config, {
+    address: token as `0x${string}`,
+    abi: cUSDABI,
+    functionName: "balanceOf",
+    args: [address!],
+  });
+
+  const formatted = result ? formatUnits(result as bigint, 18) : "0";
+
+  return formatted;
 };
