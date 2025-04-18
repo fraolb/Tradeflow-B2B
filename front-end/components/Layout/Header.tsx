@@ -5,9 +5,11 @@ import { useConnect, useAccount } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Bell, ChartSpline } from "lucide-react";
+import { useUser } from "@/context/UserContext";
 
 const Header = () => {
   const { connect } = useConnect();
+  const { name } = useUser();
   const [hideConnectBtn, setHideConnectBtn] = useState(false);
 
   useEffect(() => {
@@ -19,7 +21,7 @@ const Header = () => {
 
   return (
     <div className="flex justify-between items-center px-4 mt-4 mb-6">
-      <div className="font-bold font-mono">Hello, Fraol</div>
+      <div className="font-bold font-mono">Hello, {name}</div>
       {!hideConnectBtn && (
         <ConnectButton
           showBalance={{
