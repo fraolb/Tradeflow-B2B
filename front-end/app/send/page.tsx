@@ -246,6 +246,7 @@ const page = () => {
       {/* Pay Button */}
       <button
         type="submit"
+        disabled={loading}
         className="bg-green-700 text-white rounded-[14px] py-3 font-semibold hover:bg-green-800 hover:text-white transition"
       >
         {loading ? (
