@@ -89,3 +89,18 @@ export const getTokenAmount = async (
 
   return formatted;
 };
+
+export const updateUsername = async (username: string) => {
+  const tx = await writeContract(config, {
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: TradeflowB2B,
+    functionName: "addName",
+    args: [username],
+  });
+
+  const receipt = await waitForTransactionReceipt(config, {
+    hash: tx,
+  });
+
+  return receipt;
+};
