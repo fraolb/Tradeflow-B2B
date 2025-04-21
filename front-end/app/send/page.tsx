@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { TransactionReceipt } from "@/components/TransactionReceiptPDFForm";
@@ -8,27 +8,28 @@ import dynamic from "next/dynamic";
 import { useUser } from "@/context/UserContext";
 
 import { writeContract, waitForTransactionReceipt } from "@wagmi/core";
-import { parseAbiItem } from "viem";
 import TradeflowB2B from "@/ABI/TradeflowB2B.json";
 import cUSDABI from "@/ABI/cUSD.json";
 import { config } from "@/app/Provider"; // wagmi config
-import { decodeEventLog } from "viem";
 
-const PDFViewer = dynamic(
-  () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
-  { ssr: false }
-);
+import { Html5Qrcode } from "html5-qrcode";
+import { CameraIcon } from "@heroicons/react/24/solid";
 
 const page = () => {
   const cUSD = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
   const router = useRouter();
   const { name } = useUser();
+  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+  const [scannerInitialized, setScannerInitialized] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
 
   const [address, setAddress] = useState("");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const mockTransaction = {
     date: "2025-04-05",
     from: "Abc Trading",
@@ -91,6 +92,100 @@ const page = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Clean up scanner when component unmounts or scanner is closed
+    return () => {
+      if (html5QrCodeRef.current && scannerInitialized) {
+        html5QrCodeRef.current.stop().catch((error) => {
+          console.log("Error stopping scanner: ", error);
+        });
+        html5QrCodeRef.current.clear();
+      }
+    };
+  }, [scannerInitialized]);
+
+  useEffect(() => {
+    let scannerInstance: Html5Qrcode | null = null;
+
+    const startScanner = async () => {
+      try {
+        const cameras = await Html5Qrcode.getCameras();
+        if (cameras.length === 0) {
+          throw new Error("No cameras found");
+        }
+
+        // Create new scanner instance
+        scannerInstance = new Html5Qrcode("reader");
+
+        // Use back camera or default to last camera
+        const cameraId =
+          cameras.find((cam) => cam.label.includes("back"))?.id ||
+          cameras[cameras.length - 1].id;
+
+        await scannerInstance.start(
+          cameraId,
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            rememberLastUsedCamera: true,
+          },
+          (decodedText) => {
+            // Success callback
+            handleScanSuccess(decodedText, scannerInstance!);
+          },
+          (errorMessage) => {
+            // Error callback
+            console.warn("QR Code scan error:", errorMessage);
+          }
+        );
+
+        setIsScanning(true);
+      } catch (error) {
+        console.error("Scanner error:", error);
+        setScanError(
+          error instanceof Error ? error.message : "Camera access denied"
+        );
+        setShowScanner(false);
+      }
+    };
+
+    const handleScanSuccess = (decodedText: string, scanner: Html5Qrcode) => {
+      // Update address state
+      setAddress(decodedText);
+
+      // Stop scanner
+      scanner
+        .stop()
+        .then(() => {
+          scanner.clear();
+          setShowScanner(false);
+          setIsScanning(false);
+        })
+        .catch((err) => {
+          console.error("Error stopping scanner:", err);
+        });
+    };
+
+    if (showScanner && !isScanning) {
+      startScanner();
+    }
+
+    return () => {
+      // Cleanup function
+      if (scannerInstance && isScanning) {
+        scannerInstance
+          .stop()
+          .then(() => {
+            scannerInstance?.clear();
+            setIsScanning(false);
+          })
+          .catch((err) => {
+            console.error("Error during cleanup:", err);
+          });
+      }
+    };
+  }, [showScanner, isScanning]);
 
   if (sent) {
     return (
@@ -199,17 +294,45 @@ const page = () => {
         <label htmlFor="address" className="text-sm text-black font-mono">
           Address
         </label>
-        <input
-          id="address"
-          type="text"
-          value={address}
-          required
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="0x0000"
-          className="w-full text-xl outline-none font-semibold bg-transparent"
-        />
+        <div className="flex gap-2">
+          <input
+            id="address"
+            type="text"
+            value={address}
+            required
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="0x0000"
+            className="w-full text-xl outline-none font-semibold bg-transparent"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              if (showScanner) {
+                setScanError(null);
+              }
+              setShowScanner((prev) => !prev);
+            }}
+            className="shadow-md rounded-md text-black text-2xl bg-gray-300"
+          >
+            {showScanner ? "Cancel" : <CameraIcon className="w-10 h-10" />}
+          </button>
+        </div>
       </div>
-
+      {scanError && <p className="text-red-500 text-sm mt-2">{scanError}</p>}
+      {showScanner && (
+        <div className="mt-4">
+          <div
+            id="reader"
+            className="rounded shadow-md mx-auto border-2 border-gray-200"
+            style={{ width: "100%", maxWidth: "500px", minHeight: "300px" }}
+          />
+          <p className="text-center text-sm text-gray-500 mt-2">
+            {isScanning
+              ? "Point your camera at a QR code"
+              : "Initializing scanner..."}
+          </p>
+        </div>
+      )}
       {/* Amount Input */}
       <div className="bg-white rounded-[20px] px-4 py-6">
         <label htmlFor="amount" className="text-sm text-black font-mono">
