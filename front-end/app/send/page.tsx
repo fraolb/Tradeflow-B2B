@@ -4,13 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { TransactionReceipt } from "@/components/TransactionReceiptPDFForm";
-import dynamic from "next/dynamic";
 import { useUser } from "@/context/UserContext";
 
-import { writeContract, waitForTransactionReceipt } from "@wagmi/core";
-import TradeflowB2B from "@/ABI/TradeflowB2B.json";
-import cUSDABI from "@/ABI/cUSD.json";
-import { config } from "@/app/Provider"; // wagmi config
 import { useAccount } from "wagmi";
 import { Html5Qrcode } from "html5-qrcode";
 import { CameraIcon } from "@heroicons/react/24/solid";
@@ -28,10 +23,9 @@ interface TransactionInterface {
 }
 
 const page = () => {
-  const cUSD = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
   const router = useRouter();
   const { address, chainId } = useAccount();
-  const { name, contracts } = useUser();
+  const { name, contracts, refetch } = useUser();
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const [scannerInitialized, setScannerInitialized] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
@@ -44,6 +38,10 @@ const page = () => {
   const [sent, setSent] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [sentTx, setSentTx] = useState<TransactionInterface | null>(null);
+  const [selectedToken, setSelectedToken] = useState<"cUSD" | "cEUR" | "cReal">(
+    "cUSD"
+  );
+  const tokens: ("cUSD" | "cEUR" | "cReal")[] = ["cUSD", "cEUR", "cReal"];
 
   const shortenAddress = (address: string) =>
     `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -53,8 +51,10 @@ const page = () => {
 
     try {
       const Pay = await payUser(
-        contracts?.TradeflowContract ?? "",
-        cUSD,
+        contracts?.TradeflowContract ??
+          "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
+        contracts?.[selectedToken] ??
+          "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
         receiverAddress,
         amount,
         reason
@@ -62,10 +62,10 @@ const page = () => {
 
       // Construct sentTx manually
       setSentTx({
-        date: new Date().toISOString(), // or use Date.now() if you want a timestamp
-        from: name, // this is the sender's address (your connected wallet)
+        date: new Date().toISOString(),
+        from: name,
         address: address,
-        to: receiverAddress, // this is the receiver's address
+        to: receiverAddress,
         reason,
         amount: parseFloat(amount),
 
@@ -75,6 +75,7 @@ const page = () => {
             : `https://celo-alfajores.blockscout.com/tx/${Pay}`,
         hash: Pay,
       });
+      await refetch();
 
       setSent(true);
     } catch (error) {
@@ -283,6 +284,21 @@ const page = () => {
         send();
       }}
     >
+      <div className="flex gap-4">
+        {tokens.map((token) => (
+          <button
+            key={token}
+            onClick={() => setSelectedToken(token)}
+            className={`px-4 py-2 rounded-full border transition-all ${
+              selectedToken === token
+                ? "bg-green-600 text-white border-green-600"
+                : "bg-white text-gray-800 border-gray-300 hover:border-green-400"
+            }`}
+          >
+            {token}
+          </button>
+        ))}
+      </div>
       {/* Address Input */}
       <div className="bg-white rounded-[20px] px-4 py-6">
         <label
