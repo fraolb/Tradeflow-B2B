@@ -5,11 +5,19 @@ import { Card } from "./ui/card";
 import {
   ArrowUpCircleIcon,
   ArrowDownCircleIcon,
-} from "@heroicons/react/24/outline";
+} from "@heroicons/react/24/solid";
 import { TxData } from "@/types/transaction";
 import { usePublicClient } from "wagmi";
 
-const TransactionCard = ({ Tx }: { Tx: TxData }) => {
+const TransactionCard = ({
+  Tx,
+  smartContract,
+  chainId,
+}: {
+  Tx: TxData;
+  smartContract: string;
+  chainId: number;
+}) => {
   const publicClient = usePublicClient();
   const [txHash, setTxHash] = useState("");
   const SmartContract = "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13";
@@ -23,12 +31,12 @@ const TransactionCard = ({ Tx }: { Tx: TxData }) => {
     console.log("the block is ", block);
 
     const match = block?.transactions.find(
-      (tx) => tx.to?.toLowerCase() === SmartContract.toLowerCase()
+      (tx) => tx.to?.toLowerCase() === smartContract.toLowerCase()
     );
 
     match?.hash ? setTxHash(match.hash) : setTxHash("");
 
-    console.log(match?.hash ?? "Not found");
+    console.log("match ", match);
   };
 
   useEffect(() => {
@@ -50,16 +58,35 @@ const TransactionCard = ({ Tx }: { Tx: TxData }) => {
 
         <div className="block w-3/5">
           <div>{Tx.reason !== "" ? Tx.reason : Tx.counterparty}</div>
-          <div className="text-sm">{txHash}</div>
+          <a
+            href={
+              chainId == 42220
+                ? `https://celoscan.io/tx/${txHash}`
+                : `https://celo-alfajores.blockscout.com/tx/${txHash}`
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-700 underline text-sm"
+          >{`${txHash.slice(0, 6)}...${txHash.slice(-4)}`}</a>
         </div>
 
         {Tx.txType == 0 ? (
           <span className="w-1/5 text-red-700 pt-2 text-center">
-            - {Tx.amount} $
+            -{" "}
+            {(Number(Tx.amount) / 1e18).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}{" "}
+            $
           </span>
         ) : (
           <span className="w-1/5 text-green-700 pt-2 text-center">
-            + {Tx.amount} $
+            +{" "}
+            {(Number(Tx.amount) / 1e18).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}{" "}
+            $
           </span>
         )}
       </Card>

@@ -70,10 +70,10 @@ const styles = StyleSheet.create({
 
 interface TxData {
   date: string;
-  from: string;
-  address: string;
+  from: string | null;
+  address: `0x${string}` | undefined;
   to: string;
-  reason: string;
+  reason: string | null;
   amount: number;
   link: string;
   hash: string;

@@ -72,10 +72,12 @@ export const TransactionReport = ({
   transactions,
   name,
   address,
+  chainId,
 }: {
   transactions: ReportTxData[];
   name: string | null;
   address: `0x${string}` | undefined;
+  chainId: number;
 }) => (
   <Document>
     <Page style={styles.page}>
@@ -106,7 +108,11 @@ export const TransactionReport = ({
           </Text>
           <View style={[styles.tableCol, { flex: 2 }]}>
             <Link
-              src={`https://celo-alfajores.blockscout.com/address/${tx.counterparty}`}
+              src={
+                chainId == 42220
+                  ? `https://celoscan.io/address/${tx.counterparty}`
+                  : `https://celo-alfajores.blockscout.com/address/${tx.counterparty}`
+              }
               style={styles.hashLink}
             >
               {`${tx.counterparty.slice(0, 6)}...${tx.counterparty.slice(-4)}`}
@@ -122,7 +128,11 @@ export const TransactionReport = ({
           </Text>
           <View style={[styles.tableCol, { flex: 2 }]}>
             <Link
-              src={`https://celo-alfajores.blockscout.com/tx/${tx.hash}`}
+              src={
+                chainId == 42220
+                  ? `https://celoscan.io/tx/${tx.hash}`
+                  : `https://celo-alfajores.blockscout.com/tx/${tx.hash}`
+              }
               style={styles.hashLink}
             >
               {tx.hash ? `${tx.hash.slice(0, 6)}...${tx.hash.slice(-4)}` : ""}
