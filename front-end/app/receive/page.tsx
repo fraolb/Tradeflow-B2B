@@ -43,7 +43,7 @@ const Page = () => {
         {address && <QRCodeSVG value={address} size={256} />}
       </div>
 
-      <div className="flex justify-center items-center space-x-2 bg-white mx-24 p-2 rounded-lg">
+      <div className="flex justify-center items-center space-x-2 bg-white mx-12 md:mx-24 p-2 rounded-lg">
         <span className="text-sm text-center font-mono">
           {address?.slice(0, 6)}...{address?.slice(-6)}
         </span>

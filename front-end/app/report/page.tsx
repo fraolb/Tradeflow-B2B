@@ -4,10 +4,6 @@ import { useState } from "react";
 import { useAccount } from "wagmi";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowUpCircleIcon,
-  ArrowDownCircleIcon,
-} from "@heroicons/react/24/outline";
 import TransactionCard from "@/components/TransactionCard";
 import { useUser } from "@/context/UserContext";
 import { FindTx } from "@/lib/FindTxFunction";
@@ -33,7 +29,8 @@ const page = () => {
         const hash = await FindTx(
           i.blockNumber,
           publicClient,
-          contracts?.TradeflowContract ?? ""
+          contracts?.TradeflowContract ??
+            "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13"
         );
         return {
           ...i,
@@ -122,36 +119,21 @@ const page = () => {
             </Card>
           )}
         </div>
-        {txs.map((tx, index) => (
-          <TransactionCard
-            key={index}
-            Tx={tx}
-            smartContract={contracts?.TradeflowContract ?? ""}
-            chainId={chainId ?? 42220}
-          />
-        ))}
-        <Card className="w-full bg-gray-50 flex flex-row justify-beteween px-2 py-2 mb-2">
-          <div className="text-red-700 pt-1">
-            <ArrowUpCircleIcon className="w-10 h-10" />
-          </div>
 
-          <div className="block w-3/5">
-            <div>To 10 blocks of Ice</div>
-            <div className="text-sm">0xabcd32r342...</div>
-          </div>
-          <span className="w-1/5 text-red-700 pt-2 text-center">- 250 $</span>
-        </Card>
-        <Card className="w-full bg-gray-50 flex flex-row justify-beteween px-2 py-2 mb-2">
-          <div className="text-green-700 pt-1">
-            <ArrowDownCircleIcon className="w-10 h-10" />
-          </div>
-
-          <div className="block w-3/5">
-            <div>Buy Macbook Pc</div>
-            <div className="text-sm">0xabcd32r342...</div>
-          </div>
-          <span className="w-1/5 text-green-700 pt-2 text-center">+ 750 $</span>
-        </Card>
+        {txs
+          .slice()
+          .reverse()
+          .map((tx, index) => (
+            <TransactionCard
+              key={index}
+              Tx={tx}
+              smartContract={
+                contracts?.TradeflowContract ??
+                "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13"
+              }
+              chainId={chainId ?? 42220}
+            />
+          ))}
       </div>
     </div>
   );

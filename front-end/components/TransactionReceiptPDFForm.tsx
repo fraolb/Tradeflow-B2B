@@ -100,6 +100,10 @@ export const TransactionReceipt = ({
           <Text style={styles.value}>{transaction.from}</Text>
         </View>
         <View style={styles.row}>
+          <Text style={styles.label}>Account:</Text>
+          <Text style={styles.value}>{transaction.address}</Text>
+        </View>
+        <View style={styles.row}>
           <Text style={styles.label}>To:</Text>
           <Text style={styles.value}>{transaction.to}</Text>
         </View>

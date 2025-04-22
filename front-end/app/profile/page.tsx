@@ -51,7 +51,11 @@ const page = () => {
 
     try {
       console.log("the tradeflow contract is ", contracts?.TradeflowContract);
-      await updateUsername(username, contracts?.TradeflowContract ?? "");
+      await updateUsername(
+        username,
+        contracts?.TradeflowContract ??
+          "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13"
+      );
       setNotification({
         message: "Username updated successfully!",
         type: "success",

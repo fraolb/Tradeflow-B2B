@@ -9,10 +9,8 @@ import { formatEther } from "viem";
 
 import {
   ArrowUpIcon,
-  ArrowUpCircleIcon,
   ArrowsUpDownIcon,
   ArrowDownIcon,
-  ArrowDownCircleIcon,
   CurrencyDollarIcon,
   CurrencyEuroIcon,
 } from "@heroicons/react/24/solid";
@@ -25,8 +23,16 @@ export default function Home() {
   const router = useRouter();
   const { address, chainId } = useAccount();
   const { connect } = useConnect();
-  const { name, txs, cUSDAmount, cEURAmount, loading, refetch, contracts } =
-    useUser();
+  const {
+    name,
+    txs,
+    cUSDAmount,
+    cEURAmount,
+    cRealAmount,
+    loading,
+    refetch,
+    contracts,
+  } = useUser();
   const { data: getCelo } = useBalance({ address });
   const getCeloAmount = getCelo ? formatEther(getCelo.value) : "0";
 
@@ -46,7 +52,9 @@ export default function Home() {
           >
             <div>USD</div>
             <div className="text-sm">1 USD ~ 0.98 Eur ~ 0.95 GBP</div>
-            <div className="text-4xl pt-4">$ {cUSDAmount}</div>
+            <div className="text-4xl pt-4">
+              $ {Number(cUSDAmount).toFixed(2)}
+            </div>
           </Card>
           <div className="w-full grid grid-cols-3 divide-x divide-gray-400">
             <Button
@@ -87,51 +95,35 @@ export default function Home() {
               </Card>
             )}
           </div>
-          {txs.map((tx, index) => (
-            <TransactionCard
-              key={index}
-              Tx={tx}
-              smartContract={contracts?.TradeflowContract ?? ""}
-              chainId={chainId ?? 42220}
-            />
-          ))}
-          <Card className="w-full bg-gray-50 flex flex-row justify-beteween px-2 py-2 mb-2">
-            <div className="text-red-700 pt-1">
-              <ArrowUpCircleIcon className="w-10 h-10" />
-            </div>
-
-            <div className="block w-3/5">
-              <div>To 10 blocks of Ice</div>
-              <div className="text-sm">0xabcd32r342...</div>
-            </div>
-            <span className="w-1/5 text-red-700 pt-2 text-center">- 250 $</span>
-          </Card>
-          <Card className="w-full bg-gray-50 flex flex-row justify-beteween px-2 py-2 mb-2">
-            <div className="text-green-700 pt-1">
-              <ArrowDownCircleIcon className="w-10 h-10" />
-            </div>
-
-            <div className="block w-3/5">
-              <div>Buy Macbook Pc</div>
-              <div className="text-sm">0xabcd32r342...</div>
-            </div>
-            <span className="w-1/5 text-green-700 pt-2 text-center">
-              + 750 $
-            </span>
-          </Card>
+          {txs
+            .slice()
+            .reverse()
+            .map((tx, index) => (
+              <TransactionCard
+                key={index}
+                Tx={tx}
+                smartContract={
+                  contracts?.TradeflowContract ??
+                  "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13"
+                }
+                chainId={chainId ?? 42220}
+              />
+            ))}
         </div>
         <div className="w-full">
           <div className="flex justify-left px-2 mb-2">
             <h3 className="font-bold font-mono">Currency</h3>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-1 md:gap-4">
             <Card className="px-2 py-2 mb-2 gap-0 bg-gray-50">
               <div className="text-green-700 pt-1">
                 <CurrencyDollarIcon className="w-10 h-10" />
               </div>
 
               <div className="block">cUSD</div>
-              <span className="text-green-700">{cUSDAmount} $</span>
+              <span className="text-green-700">
+                {Number(cUSDAmount).toFixed(2)} $
+              </span>
             </Card>
             <Card className="px-2 py-2 mb-2 gap-0 bg-gray-50">
               <div className="text-blue-700 pt-1">
@@ -139,17 +131,29 @@ export default function Home() {
               </div>
 
               <div className="block">cEur</div>
-              <span className="text-green-700">{cEURAmount} €</span>
+              <span className="text-green-700">
+                {Number(cEURAmount).toFixed(2)} €
+              </span>
             </Card>
             <Card className="px-2 py-2 mb-2 gap-0 bg-gray-50">
-              <div className="text-yellow-400 pt-1">
-                <CurrencyDollarIcon className="w-10 h-10" />
+              <div className="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg my-2">
+                R
+              </div>
+
+              <div className="block">cReal</div>
+              <span className="text-green-700">
+                {Number(cRealAmount).toFixed(2)} R
+              </span>
+            </Card>
+            <Card className="px-2 py-2 mb-2 gap-0 bg-gray-50">
+              <div className="bg-yellow-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg my-2">
+                C
               </div>
 
               <div className="block">Celo</div>
               <span className="text-green-700">
                 {" "}
-                {Number(getCeloAmount).toFixed(2)} CELO
+                {Number(getCeloAmount).toFixed(2)} C
               </span>
             </Card>
           </div>
