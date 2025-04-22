@@ -23,7 +23,7 @@ const page = () => {
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] =
     useState<notificationInterfact | null>();
-  const { name } = useUser();
+  const { name, contracts, refetch } = useUser();
 
   const updateUsernameFunction = async () => {
     setLoading(true);
@@ -50,11 +50,13 @@ const page = () => {
     }
 
     try {
-      await updateUsername(username);
+      console.log("the tradeflow contract is ", contracts?.TradeflowContract);
+      await updateUsername(username, contracts?.TradeflowContract ?? "");
       setNotification({
         message: "Username updated successfully!",
         type: "success",
       });
+      await refetch();
       setLoading(false);
     } catch (error) {
       setNotification({
@@ -105,9 +107,38 @@ const page = () => {
         <div className="flex justify-end mt-4">
           <Button
             className="bg-green-700 hover:bg-green-800"
-            onClick={() => updateUsernameFunction()}
+            onClick={(e) => {
+              e.preventDefault();
+              updateUsernameFunction();
+            }}
           >
-            Update
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-3 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Updating...
+              </div>
+            ) : (
+              "Update"
+            )}
           </Button>
         </div>
       </div>

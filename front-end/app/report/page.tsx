@@ -17,8 +17,8 @@ import { TransactionReport } from "@/components/TransactionReportPDFForm";
 import { ReportTxData } from "@/types/reportTransaction";
 
 const page = () => {
-  const { name, txs, loading, refetch } = useUser();
-  const { address } = useAccount();
+  const { name, txs, loading, refetch, contracts } = useUser();
+  const { address, chainId } = useAccount();
   const [transactions, setTransactions] = useState<ReportTxData[]>([]);
   const [loadingReport, setLoadingReport] = useState(false);
 
@@ -30,7 +30,11 @@ const page = () => {
 
     const enrichedTxs = await Promise.all(
       txs.map(async (i) => {
-        const hash = await FindTx(i.blockNumber, publicClient);
+        const hash = await FindTx(
+          i.blockNumber,
+          publicClient,
+          contracts?.TradeflowContract ?? ""
+        );
         return {
           ...i,
           hash: hash || "Not Found",
@@ -53,6 +57,7 @@ const page = () => {
                 transactions={transactions}
                 name={name}
                 address={address}
+                chainId={chainId ?? 42220}
               />
             }
             fileName="transaction_report.pdf"
@@ -118,7 +123,12 @@ const page = () => {
           )}
         </div>
         {txs.map((tx, index) => (
-          <TransactionCard key={index} Tx={tx} />
+          <TransactionCard
+            key={index}
+            Tx={tx}
+            smartContract={contracts?.TradeflowContract ?? ""}
+            chainId={chainId ?? 42220}
+          />
         ))}
         <Card className="w-full bg-gray-50 flex flex-row justify-beteween px-2 py-2 mb-2">
           <div className="text-red-700 pt-1">

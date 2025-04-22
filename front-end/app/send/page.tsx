@@ -11,77 +11,69 @@ import { writeContract, waitForTransactionReceipt } from "@wagmi/core";
 import TradeflowB2B from "@/ABI/TradeflowB2B.json";
 import cUSDABI from "@/ABI/cUSD.json";
 import { config } from "@/app/Provider"; // wagmi config
-
+import { useAccount } from "wagmi";
 import { Html5Qrcode } from "html5-qrcode";
 import { CameraIcon } from "@heroicons/react/24/solid";
+import { payUser } from "@/lib/ContractFunctions";
+
+interface TransactionInterface {
+  date: string;
+  from: string | null;
+  address: `0x${string}` | undefined;
+  to: string;
+  reason: string | null;
+  amount: number;
+  link: string;
+  hash: string;
+}
 
 const page = () => {
   const cUSD = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
   const router = useRouter();
-  const { name } = useUser();
+  const { address, chainId } = useAccount();
+  const { name, contracts } = useUser();
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const [scannerInitialized, setScannerInitialized] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
 
-  const [address, setAddress] = useState("");
+  const [receiverAddress, setReceiverAddress] = useState("");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
-  const mockTransaction = {
-    date: "2025-04-05",
-    from: "Abc Trading",
-    address: "0xAb...1234",
-    to: "0xAb...1234",
-    reason: "Payment for groceries",
-    amount: 20,
-    link: "https://celo-alfajores.blockscout.com/tx/0xe5a4655334d0d3995db89540a931ecea584494e137103ec5cb4f76932ffdd572",
-    hash: "0xabc123def456789...",
-  };
-  const [sentTx, setSentTx] = useState<typeof mockTransaction | null>(null);
+  const [sentTx, setSentTx] = useState<TransactionInterface | null>(null);
 
   const shortenAddress = (address: string) =>
     `${address.slice(0, 6)}...${address.slice(-4)}`;
 
   const send = async () => {
     setLoading(true);
+
     try {
-      const amountInWei = BigInt(Math.floor(parseFloat(amount) * 1e18)); // cUSD has 18 decimals
+      const Pay = await payUser(
+        contracts?.TradeflowContract ?? "",
+        cUSD,
+        receiverAddress,
+        amount,
+        reason
+      );
 
-      console.log("the amount in wei is ", amountInWei);
-
-      // Step 1: Approve Tradeflow contract
-      const approveHash = await writeContract(config, {
-        address: cUSD as `0x${string}`,
-        abi: cUSDABI,
-        functionName: "approve",
-        args: ["0x92c7d8B28b2c487c7f455733470B27ABE2FefF13", amountInWei],
-      });
-
-      await waitForTransactionReceipt(config, { hash: approveHash });
-
-      // Step 2: Execute payment on Tradeflow
-      const hash = await writeContract(config, {
-        address: "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13" as `0x${string}`,
-        abi: TradeflowB2B,
-        functionName: "pay",
-        args: [cUSD, address, amountInWei, reason],
-      });
-
-      await waitForTransactionReceipt(config, { hash });
-
-      // Step 3: Construct sentTx manually
+      // Construct sentTx manually
       setSentTx({
         date: new Date().toISOString(), // or use Date.now() if you want a timestamp
-        from: address, // this is the sender's address (your connected wallet)
-        to: address, // this is the receiver's address
+        from: name, // this is the sender's address (your connected wallet)
+        address: address,
+        to: receiverAddress, // this is the receiver's address
         reason,
         amount: parseFloat(amount),
-        address,
-        link: `https://celo-alfajores.blockscout.com/tx/${hash}`,
-        hash,
+
+        link:
+          chainId == 42220
+            ? `https://celoscan.io/tx/${Pay}`
+            : `https://celo-alfajores.blockscout.com/tx/${Pay}`,
+        hash: Pay,
       });
 
       setSent(true);
@@ -151,8 +143,8 @@ const page = () => {
     };
 
     const handleScanSuccess = (decodedText: string, scanner: Html5Qrcode) => {
-      // Update address state
-      setAddress(decodedText);
+      // Update receiver address state
+      setReceiverAddress(decodedText);
 
       // Stop scanner
       scanner
@@ -205,7 +197,9 @@ const page = () => {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <strong>From:</strong>{" "}
-                <div>{name || shortenAddress(sentTx.from)}</div>
+                <div>
+                  {name || (sentTx.from != null && shortenAddress(sentTx.from))}
+                </div>
               </div>
               <div className="flex justify-between">
                 <strong>To:</strong> <div>{shortenAddress(sentTx.to)}</div>
@@ -259,7 +253,7 @@ const page = () => {
             className="bg-blue-500 text-white p-2 rounded hover:bg-opacity-80"
             onClick={() => {
               setSent(false);
-              setAddress("");
+              setReceiverAddress("");
               setAmount("");
               setReason("");
             }}
@@ -291,16 +285,19 @@ const page = () => {
     >
       {/* Address Input */}
       <div className="bg-white rounded-[20px] px-4 py-6">
-        <label htmlFor="address" className="text-sm text-black font-mono">
+        <label
+          htmlFor="receiverAddress"
+          className="text-sm text-black font-mono"
+        >
           Address
         </label>
         <div className="flex gap-2">
           <input
-            id="address"
+            id="receiverAddress"
             type="text"
-            value={address}
+            value={receiverAddress}
             required
-            onChange={(e) => setAddress(e.target.value)}
+            onChange={(e) => setReceiverAddress(e.target.value)}
             placeholder="0x0000"
             className="w-full text-xl outline-none font-semibold bg-transparent"
           />

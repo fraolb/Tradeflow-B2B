@@ -23,9 +23,10 @@ import TransactionCard from "@/components/TransactionCard";
 
 export default function Home() {
   const router = useRouter();
-  const { address } = useAccount();
+  const { address, chainId } = useAccount();
   const { connect } = useConnect();
-  const { name, txs, cUSDAmount, cEURAmount, loading, refetch } = useUser();
+  const { name, txs, cUSDAmount, cEURAmount, loading, refetch, contracts } =
+    useUser();
   const { data: getCelo } = useBalance({ address });
   const getCeloAmount = getCelo ? formatEther(getCelo.value) : "0";
 
@@ -87,7 +88,12 @@ export default function Home() {
             )}
           </div>
           {txs.map((tx, index) => (
-            <TransactionCard key={index} Tx={tx} />
+            <TransactionCard
+              key={index}
+              Tx={tx}
+              smartContract={contracts?.TradeflowContract ?? ""}
+              chainId={chainId ?? 42220}
+            />
           ))}
           <Card className="w-full bg-gray-50 flex flex-row justify-beteween px-2 py-2 mb-2">
             <div className="text-red-700 pt-1">
