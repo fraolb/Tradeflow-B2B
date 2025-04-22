@@ -14,9 +14,12 @@ import cUSDABI from "@/ABI/cUSD.json";
 
 const CONTRACT_ADDRESS = "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13";
 
-export const getNameFromContract = async (address: string): Promise<string> => {
+export const getNameFromContract = async (
+  address: string,
+  smartContract: string
+): Promise<string> => {
   const result = await readContract(config, {
-    address: CONTRACT_ADDRESS as `0x${string}`,
+    address: smartContract as `0x${string}`,
     abi: TradeflowB2B,
     functionName: "getUserName",
     args: [address],
@@ -26,10 +29,11 @@ export const getNameFromContract = async (address: string): Promise<string> => {
 };
 
 export const getTxsFromContract = async (
-  address: string
+  address: string,
+  smartContract: string
 ): Promise<TxData[]> => {
   const result = await readContract(config, {
-    address: CONTRACT_ADDRESS as `0x${string}`,
+    address: smartContract as `0x${string}`,
     abi: TradeflowB2B,
     functionName: "getUserTransactions",
     args: [address],
@@ -49,29 +53,38 @@ export const getTxsFromContract = async (
   );
 };
 
-export const payUser = async ({
-  stablecoin,
-  receiver,
-  amount,
-  reason,
-}: {
-  stablecoin: `0x${string}`;
-  receiver: `0x${string}`;
-  amount: bigint;
-  reason: string;
-}) => {
-  const tx = await writeContract(config, {
-    address: CONTRACT_ADDRESS as `0x${string}`,
+export const payUser = async (
+  smartContract: string,
+  stablecoin: string,
+  receiver: string,
+  amount: string,
+  reason: string
+) => {
+  const amountInWei = BigInt(Math.floor(parseFloat(amount) * 1e18)); // cUSD has 18 decimals
+
+  console.log("the amount in wei is ", amountInWei);
+
+  // Step 1: Approve Tradeflow contract
+  const approveHash = await writeContract(config, {
+    address: stablecoin as `0x${string}`,
+    abi: cUSDABI,
+    functionName: "approve",
+    args: [smartContract, amountInWei],
+  });
+
+  await waitForTransactionReceipt(config, { hash: approveHash });
+
+  // Step 2: Execute payment on Tradeflow
+  const hash = await writeContract(config, {
+    address: smartContract as `0x${string}`,
     abi: TradeflowB2B,
     functionName: "pay",
-    args: [stablecoin, receiver, amount, reason],
+    args: [stablecoin, receiver, amountInWei, reason],
   });
 
-  const receipt = await waitForTransactionReceipt(config, {
-    hash: tx,
-  });
+  await waitForTransactionReceipt(config, { hash });
 
-  return receipt;
+  return hash;
 };
 
 export const getTokenAmount = async (
@@ -90,9 +103,12 @@ export const getTokenAmount = async (
   return formatted;
 };
 
-export const updateUsername = async (username: string) => {
+export const updateUsername = async (
+  username: string,
+  smartContract: string
+) => {
   const tx = await writeContract(config, {
-    address: CONTRACT_ADDRESS as `0x${string}`,
+    address: smartContract as `0x${string}`,
     abi: TradeflowB2B,
     functionName: "addName",
     args: [username],

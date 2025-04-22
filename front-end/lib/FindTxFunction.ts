@@ -4,7 +4,8 @@ import { PublicClient } from "viem";
 
 export const FindTx = async (
   blockNumber: number,
-  publicClient: PublicClient
+  publicClient: PublicClient,
+  smartContract: string
 ) => {
   if (!publicClient) return null;
 
@@ -16,7 +17,7 @@ export const FindTx = async (
   const SmartContract = "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13";
 
   const match = block.transactions.find(
-    (tx) => tx.to?.toLowerCase() === SmartContract.toLowerCase()
+    (tx) => tx.to?.toLowerCase() === smartContract.toLowerCase()
   );
 
   return match?.hash || null;
