@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { TransactionReceipt } from "@/components/TransactionReceiptPDFForm";
@@ -22,12 +22,11 @@ interface TransactionInterface {
   hash: string;
 }
 
-const page = () => {
+export default function Send() {
   const router = useRouter();
   const { address, chainId } = useAccount();
   const { name, contracts, refetch } = useUser();
-  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
-  const [scannerInitialized, setScannerInitialized] = useState(false);
+
   const [scanError, setScanError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
 
@@ -87,18 +86,6 @@ const page = () => {
   };
 
   useEffect(() => {
-    // Clean up scanner when component unmounts or scanner is closed
-    return () => {
-      if (html5QrCodeRef.current && scannerInitialized) {
-        html5QrCodeRef.current.stop().catch((error) => {
-          console.log("Error stopping scanner: ", error);
-        });
-        html5QrCodeRef.current.clear();
-      }
-    };
-  }, [scannerInitialized]);
-
-  useEffect(() => {
     let scannerInstance: Html5Qrcode | null = null;
 
     const startScanner = async () => {
@@ -121,7 +108,6 @@ const page = () => {
           {
             fps: 10,
             qrbox: { width: 250, height: 250 },
-            rememberLastUsedCamera: true,
           },
           (decodedText) => {
             // Success callback
@@ -415,6 +401,4 @@ const page = () => {
       </button>
     </form>
   );
-};
-
-export default page;
+}

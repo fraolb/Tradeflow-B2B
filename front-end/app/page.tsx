@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useConnect, useAccount, useBalance } from "wagmi";
 import { injected } from "wagmi/connectors";
@@ -23,16 +23,8 @@ export default function Home() {
   const router = useRouter();
   const { address, chainId } = useAccount();
   const { connect } = useConnect();
-  const {
-    name,
-    txs,
-    cUSDAmount,
-    cEURAmount,
-    cRealAmount,
-    loading,
-    refetch,
-    contracts,
-  } = useUser();
+  const { txs, cUSDAmount, cEURAmount, cRealAmount, loading, contracts } =
+    useUser();
   const { data: getCelo } = useBalance({ address });
   const getCeloAmount = getCelo ? formatEther(getCelo.value) : "0";
 

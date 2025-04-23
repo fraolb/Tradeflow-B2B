@@ -14,8 +14,6 @@ export const FindTx = async (
     includeTransactions: true,
   });
 
-  const SmartContract = "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13";
-
   const match = block.transactions.find(
     (tx) => tx.to?.toLowerCase() === smartContract.toLowerCase()
   );

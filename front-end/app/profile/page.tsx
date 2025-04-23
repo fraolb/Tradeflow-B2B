@@ -18,7 +18,7 @@ interface notificationInterfact {
   type: string;
 }
 
-const page = () => {
+export default function Profile() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] =
@@ -62,7 +62,7 @@ const page = () => {
       });
       await refetch();
       setLoading(false);
-    } catch (error) {
+    } catch {
       setNotification({
         message: "An error occurred while updating the username.",
         type: "error",
@@ -231,6 +231,4 @@ const page = () => {
       </div>
     </div>
   );
-};
-
-export default page;
+}

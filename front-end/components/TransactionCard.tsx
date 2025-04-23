@@ -20,7 +20,6 @@ const TransactionCard = ({
 }) => {
   const publicClient = usePublicClient();
   const [txHash, setTxHash] = useState("");
-  const SmartContract = "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13";
 
   const findTx = async () => {
     const block = await publicClient?.getBlock({
@@ -34,7 +33,11 @@ const TransactionCard = ({
       (tx) => tx.to?.toLowerCase() === smartContract.toLowerCase()
     );
 
-    match?.hash ? setTxHash(match.hash) : setTxHash("");
+    if (match?.hash) {
+      setTxHash(match.hash);
+    } else {
+      setTxHash("");
+    }
 
     console.log("match ", match);
   };
@@ -45,7 +48,7 @@ const TransactionCard = ({
 
   return (
     <div>
-      <Card className="w-full bg-gray-50 flex flex-row justify-beteween px-2 py-2 mb-2">
+      <Card className="w-full bg-gray-50 flex flex-row justify-beteween px-2 py-2 mb-2 gap-2">
         {Tx.txType == 0 ? (
           <div className="text-red-700 pt-1">
             <ArrowUpCircleIcon className="w-10 h-10" />
@@ -56,8 +59,10 @@ const TransactionCard = ({
           </div>
         )}
 
-        <div className="block w-3/5">
-          <div>{Tx.reason !== "" ? Tx.reason : Tx.counterparty}</div>
+        <div className="block w-4/6 md:w-4/5">
+          <div className="truncate">
+            {Tx.reason !== "" ? Tx.reason : Tx.counterparty}
+          </div>
           <a
             href={
               chainId == 42220

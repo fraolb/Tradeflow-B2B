@@ -12,8 +12,8 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import { TransactionReport } from "@/components/TransactionReportPDFForm";
 import { ReportTxData } from "@/types/reportTransaction";
 
-const page = () => {
-  const { name, txs, loading, refetch, contracts } = useUser();
+export default function Report() {
+  const { name, txs, loading, contracts } = useUser();
   const { address, chainId } = useAccount();
   const [transactions, setTransactions] = useState<ReportTxData[]>([]);
   const [loadingReport, setLoadingReport] = useState(false);
@@ -137,6 +137,4 @@ const page = () => {
       </div>
     </div>
   );
-};
-
-export default page;
+}

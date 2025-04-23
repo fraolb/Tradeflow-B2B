@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useConnect, useAccount } from "wagmi";
+import { useConnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Bell, ChartSpline } from "lucide-react";

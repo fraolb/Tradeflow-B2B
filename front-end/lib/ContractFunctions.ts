@@ -12,8 +12,6 @@ import { formatUnits } from "viem";
 import TradeflowB2B from "@/ABI/TradeflowB2B.json";
 import cUSDABI from "@/ABI/cUSD.json";
 
-const CONTRACT_ADDRESS = "0x92c7d8B28b2c487c7f455733470B27ABE2FefF13";
-
 export const getNameFromContract = async (
   address: string,
   smartContract: string
@@ -40,8 +38,8 @@ export const getTxsFromContract = async (
   });
 
   // Ensure the contract returns an array of structs
-  return (result as any[]).map(
-    (tx: any): TxData => ({
+  return (result as TxData[]).map(
+    (tx: TxData): TxData => ({
       counterparty: tx.counterparty,
       stablecoin: tx.stablecoin,
       amount: Number(tx.amount),
