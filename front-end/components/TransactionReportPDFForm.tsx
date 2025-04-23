@@ -92,7 +92,7 @@ export const TransactionReport = ({
       {/* Table Header */}
       <View style={styles.tableHeader}>
         <Text style={[styles.tableCol, { flex: 1 }]}>Date</Text>
-        <Text style={[styles.tableCol, { flex: 2 }]}>To/From</Text>
+        <Text style={[styles.tableCol, { flex: 1 }]}>To/From</Text>
         <Text style={[styles.tableCol, { flex: 1 }]}>Type</Text>
         <Text style={[styles.tableCol, { flex: 3 }]}>Reason</Text>
         <Text style={[styles.tableCol, { flex: 1 }]}>Amount</Text>
@@ -106,7 +106,7 @@ export const TransactionReport = ({
             {" "}
             {new Date(tx.timestamp * 1000).toLocaleDateString()}
           </Text>
-          <View style={[styles.tableCol, { flex: 2 }]}>
+          <View style={[styles.tableCol, { flex: 1 }]}>
             <Link
               src={
                 chainId == 42220

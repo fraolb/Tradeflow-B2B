@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { pdf } from "@react-pdf/renderer";
 import { TransactionReceipt } from "@/components/TransactionReceiptPDFForm";
 import { useUser } from "@/context/UserContext";
 
@@ -10,6 +10,8 @@ import { useAccount } from "wagmi";
 import { Html5Qrcode } from "html5-qrcode";
 import { CameraIcon } from "@heroicons/react/24/solid";
 import { payUser } from "@/lib/ContractFunctions";
+import { blobToFile } from "@/lib/blobToFile";
+import { Button } from "@/components/ui/button";
 
 interface TransactionInterface {
   date: string;
@@ -37,6 +39,7 @@ export default function Send() {
   const [sent, setSent] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [sentTx, setSentTx] = useState<TransactionInterface | null>(null);
+  const [loadingReport, setLoadingReport] = useState(false);
   const [selectedToken, setSelectedToken] = useState<"cUSD" | "cEUR" | "cReal">(
     "cUSD"
   );
@@ -82,6 +85,46 @@ export default function Send() {
       alert("Something went wrong. Check the console for more info.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePDF = async () => {
+    if (sentTx == null) return;
+    setLoadingReport(true);
+    const pdfInstance = pdf(<TransactionReceipt transaction={sentTx} />);
+
+    const blob = await pdfInstance.toBlob();
+    const file = await blobToFile(blob, "transaction_receipt.pdf");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await res.json();
+
+    if (result.contentUrl) {
+      // Create the download URL by adding Cloudinary's force download flag
+      const downloadUrl = result.contentUrl.replace(
+        "/upload/",
+        "/upload/fl_attachment/"
+      );
+
+      // Trigger the download
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "transaction_receipt.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setLoadingReport(false);
+    } else {
+      setLoadingReport(false);
+      alert("Upload failed");
     }
   };
 
@@ -218,22 +261,39 @@ export default function Send() {
 
         <div className="flex justify-between gap-2 mt-4">
           {sentTx !== null && (
-            <PDFDownloadLink
-              document={<TransactionReceipt transaction={sentTx} />}
-              fileName="transaction_report.pdf"
+            <Button
+              onClick={() => handlePDF()}
+              className="bg-green-500 text-white p-2 rounded hover:bg-opacity-80"
+              disabled={loadingReport}
             >
-              {({ loading }) =>
-                loading ? (
-                  <button className="bg-gray-300 p-2 rounded">
-                    Preparing...
-                  </button>
-                ) : (
-                  <button className="bg-green-500 text-white p-2 rounded hover:bg-opacity-80">
-                    Download Report PDF
-                  </button>
-                )
-              }
-            </PDFDownloadLink>
+              {loadingReport ? (
+                <div className="flex items-center justify-center">
+                  <svg
+                    className="animate-spin h-5 w-5 mr-3 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Downloading...
+                </div>
+              ) : (
+                "Download Report"
+              )}
+            </Button>
           )}
 
           <button
