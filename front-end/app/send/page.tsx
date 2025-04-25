@@ -12,7 +12,15 @@ import { CameraIcon } from "@heroicons/react/24/solid";
 import { payUser } from "@/lib/ContractFunctions";
 import { blobToFile } from "@/lib/blobToFile";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { getTokenAmount } from "@/lib/ContractFunctions";
+import { Alert, AlertTitle } from "@/components/ui/alert";
+import { InformationCircleIcon } from "@heroicons/react/24/solid";
 
+interface notificationInterfact {
+  message: string;
+  type: string;
+}
 interface TransactionInterface {
   date: string;
   from: string | null;
@@ -43,14 +51,26 @@ export default function Send() {
   const [selectedToken, setSelectedToken] = useState<"cUSD" | "cEUR" | "cReal">(
     "cUSD"
   );
+  const [tokenBalance, setTokenBalance] = useState("");
   const tokens: ("cUSD" | "cEUR" | "cReal")[] = ["cUSD", "cEUR", "cReal"];
+  const [notification, setNotification] =
+    useState<notificationInterfact | null>();
 
   const shortenAddress = (address: string) =>
     `${address.slice(0, 6)}...${address.slice(-4)}`;
 
   const send = async () => {
     setLoading(true);
-
+    console.log("selectedToken is ", selectedToken, contracts?.[selectedToken]);
+    if (Number(tokenBalance) < Number(amount)) {
+      setNotification({
+        message: "Insufficient funds!",
+        type: "error",
+      });
+      setLoading(false);
+      setTimeout(() => setNotification(null), 3000);
+      return;
+    }
     try {
       const Pay = await payUser(
         contracts?.TradeflowContract ??
@@ -82,7 +102,12 @@ export default function Send() {
       setSent(true);
     } catch (error) {
       console.error("Transaction failed:", error);
-      alert("Something went wrong. Check the console for more info.");
+      setNotification({
+        message: "Transaction failed!",
+        type: "error",
+      });
+      setLoading(false);
+      setTimeout(() => setNotification(null), 3000);
     } finally {
       setLoading(false);
     }
@@ -127,6 +152,26 @@ export default function Send() {
       alert("Upload failed");
     }
   };
+
+  // Fetch balances when address changes
+  useEffect(() => {
+    const fetchBalances = async () => {
+      if (!address) return;
+
+      try {
+        const amount = await getTokenAmount(
+          address,
+          contracts?.[selectedToken] ??
+            "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
+        );
+        setTokenBalance(amount);
+      } catch (err) {
+        console.error("Error fetching balances:", err);
+      }
+    };
+
+    fetchBalances();
+  }, [address, selectedToken]);
 
   useEffect(() => {
     let scannerInstance: Html5Qrcode | null = null;
@@ -211,47 +256,61 @@ export default function Send() {
 
   if (sent) {
     return (
-      <div className="bg-white rounded-[20px] px-4 py-6">
+      <Card className="bg-white rounded-xl p-6 max-w-md mx-auto">
         {sentTx && (
-          <div className="max-w-md mx-auto p-6 border rounded-lg shadow-md">
-            <h1 className="text-2xl font-bold text-center">Tradeflow B2B</h1>
-            <p className="text-center text-gray-600 mb-4">
-              Transaction Receipt
-            </p>
-
-            <div className="bg-green-100 text-right text-lg font-semibold p-4 rounded mb-4">
-              Amount Paid:{" "}
-              <span className="text-black">${sentTx.amount.toFixed(2)}</span>
+          <div className="space-y-4">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-[#212529]">
+                Tradeflow B2B
+              </h1>
+              <p className="text-[#6C757D] mt-1">Transaction Receipt</p>
             </div>
 
-            <div className="space-y-2 text-sm">
+            <div className="bg-[#38B000]/10 p-4 rounded-lg text-right">
+              <span className="text-[#6C757D] font-medium">Amount Paid: </span>
+              <span className="text-[#212529] text-xl font-bold">
+                ${sentTx.amount.toFixed(2)}
+              </span>
+            </div>
+
+            <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <strong>From:</strong>{" "}
-                <div>
+                <span className="text-[#6C757D] font-medium">From:</span>
+                <span className="text-[#212529] font-medium">
                   {name || (sentTx.from != null && shortenAddress(sentTx.from))}
-                </div>
+                </span>
               </div>
               <div className="flex justify-between">
-                <strong>To:</strong> <div>{shortenAddress(sentTx.to)}</div>
+                <span className="text-[#6C757D] font-medium">To:</span>
+                <span className="text-[#212529] font-medium">
+                  {shortenAddress(sentTx.to)}
+                </span>
               </div>
               <div className="flex justify-between">
-                <strong>Date:</strong> <div>{sentTx.date.slice(0, 10)}</div>
+                <span className="text-[#6C757D] font-medium">Date:</span>
+                <span className="text-[#212529] font-medium">
+                  {sentTx.date.slice(0, 10)}
+                </span>
               </div>
               <div className="flex justify-between">
-                <strong>Reason:</strong> <div>{sentTx.reason}</div>
+                <span className="text-[#6C757D] font-medium">Reason:</span>
+                <span className="text-[#212529] font-medium">
+                  {sentTx.reason || "-"}
+                </span>
               </div>
             </div>
 
-            <hr className="my-4" />
+            <div className="border-t border-[#E9ECEF] my-4"></div>
 
-            <div className="text-sm flex justify-between">
-              <strong>Transaction Hash:</strong>
-
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-[#6C757D] font-medium">
+                Transaction Hash:
+              </span>
               <a
                 href={sentTx.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-700 underline"
+                className="text-[#4361EE] hover:underline font-medium"
               >
                 {shortenAddress(sentTx.hash)}
               </a>
@@ -259,97 +318,114 @@ export default function Send() {
           </div>
         )}
 
-        <div className="flex justify-between gap-2 mt-4">
-          {sentTx !== null && (
-            <Button
-              onClick={() => handlePDF()}
-              className="bg-green-500 text-white p-2 rounded hover:bg-opacity-80"
-              disabled={loadingReport}
-            >
-              {loadingReport ? (
-                <div className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin h-5 w-5 mr-3 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Downloading...
-                </div>
-              ) : (
-                "Download Report"
-              )}
-            </Button>
-          )}
+        <div className="mt-6 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            {sentTx !== null && (
+              <Button
+                onClick={() => handlePDF()}
+                className={`bg-[#4361EE] hover:bg-[#3A56D4] text-white ${
+                  loadingReport ? "opacity-80" : ""
+                }`}
+                disabled={loadingReport}
+              >
+                {loadingReport ? (
+                  <div className="flex items-center justify-center">
+                    <svg
+                      className="animate-spin h-5 w-5 mr-2 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Downloading
+                  </div>
+                ) : (
+                  "Download Receipt"
+                )}
+              </Button>
+            )}
 
-          <button
-            className="bg-blue-500 text-white p-2 rounded hover:bg-opacity-80"
-            onClick={() => {
-              setSent(false);
-              setReceiverAddress("");
-              setAmount("");
-              setReason("");
-            }}
-          >
-            Make Another Transaction
-          </button>
-        </div>
-        <div className="flex justify-center">
-          <button
-            className="mt-4 p-2 px-4 text-black bg-gray-200 shadow-lg rounded"
-            onClick={() => {
-              router.push("/");
-            }}
+            <Button
+              onClick={() => {
+                setSent(false);
+                setReceiverAddress("");
+                setAmount("");
+                setReason("");
+              }}
+              className="bg-[#7209B7] hover:bg-[#5F078F] text-white"
+            >
+              New Transaction
+            </Button>
+          </div>
+
+          <Button
+            onClick={() => router.push("/")}
+            variant="outline"
+            className="w-full border-[#E9ECEF] hover:bg-[#F8F9FA] text-[#212529]"
           >
             Return to Home
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
     <form
-      className="flex flex-col gap-6 px-4 py-4"
+      className="flex flex-col gap-2 px-2 py-2"
       onSubmit={(e) => {
         e.preventDefault();
         send();
       }}
     >
-      <div className="flex gap-4">
+      {notification && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-100 max-w-md w-full">
+          <Alert
+            className={`mt-12 p-4 w-full flex justify-center items-center text-center gap-2 rounded-xl shadow-lg ${
+              notification.type === "success" ? "bg-[#38B000]" : "bg-[#FF006E]"
+            } text-white`}
+          >
+            <InformationCircleIcon className="h-5 w-5 text-white" />
+            <AlertTitle className="text-white font-medium">
+              {notification.message}
+            </AlertTitle>
+          </Alert>
+        </div>
+      )}
+      <div className="flex gap-3 overflow-x-auto pb-2">
         {tokens.map((token) => (
           <button
             key={token}
+            type="button"
             onClick={() => setSelectedToken(token)}
-            className={`px-4 py-2 rounded-full border transition-all ${
+            className={`px-4 py-2 rounded-full border-2 transition-all whitespace-nowrap ${
               selectedToken === token
-                ? "bg-green-600 text-white border-green-600"
-                : "bg-white text-gray-800 border-gray-300 hover:border-green-400"
+                ? "bg-[#4361EE] text-white border-[#4361EE]"
+                : "bg-white text-[#212529] border-[#E9ECEF] hover:border-[#4361EE]"
             }`}
           >
             {token}
           </button>
         ))}
       </div>
-      {/* Address Input */}
-      <div className="bg-white rounded-[20px] px-4 py-6">
+
+      <Card className="rounded-xl p-5 bg-white gap-2">
         <label
           htmlFor="receiverAddress"
-          className="text-sm text-black font-mono"
+          className="text-sm text-[#6C757D] font-medium"
         >
           Address
         </label>
@@ -361,7 +437,7 @@ export default function Send() {
             required
             onChange={(e) => setReceiverAddress(e.target.value)}
             placeholder="0x0000"
-            className="w-full text-xl outline-none font-semibold bg-transparent"
+            className="w-full text-lg outline-none font-semibold bg-transparent text-[#212529]"
           />
           <button
             type="button"
@@ -371,33 +447,41 @@ export default function Send() {
               }
               setShowScanner((prev) => !prev);
             }}
-            className="shadow-md rounded-md text-black text-2xl bg-gray-300"
+            className="p-2 rounded-lg bg-[#F8F9FA] hover:bg-[#E9ECEF] transition-colors"
           >
-            {showScanner ? "Cancel" : <CameraIcon className="w-10 h-10" />}
+            {showScanner ? (
+              <span className="text-[#FF006E]">Cancel</span>
+            ) : (
+              <CameraIcon className="w-6 h-6 text-[#4361EE]" />
+            )}
           </button>
         </div>
-      </div>
-      {scanError && <p className="text-red-500 text-sm mt-2">{scanError}</p>}
+      </Card>
+
+      {scanError && (
+        <div className="text-[#FF006E] text-sm px-2">{scanError}</div>
+      )}
+
       {showScanner && (
-        <div className="mt-4">
+        <Card className="mt-2 p-4">
           <div
             id="reader"
-            className="rounded shadow-md mx-auto border-2 border-gray-200"
+            className="rounded-lg mx-auto border-2 border-[#E9ECEF]"
             style={{ width: "100%", maxWidth: "500px", minHeight: "300px" }}
           />
-          <p className="text-center text-sm text-gray-500 mt-2">
+          <p className="text-center text-sm text-[#6C757D] mt-3">
             {isScanning
               ? "Point your camera at a QR code"
               : "Initializing scanner..."}
           </p>
-        </div>
+        </Card>
       )}
-      {/* Amount Input */}
-      <div className="bg-white rounded-[20px] px-4 py-6">
-        <label htmlFor="amount" className="text-sm text-black font-mono">
+
+      <Card className="rounded-xl p-5 bg-white gap-2">
+        <label htmlFor="amount" className="text-sm text-[#6C757D] font-medium">
           Amount
         </label>
-        <div className="flex justify-end text-2xl ">
+        <div className="flex items-center">
           <input
             id="amount"
             type="number"
@@ -405,31 +489,51 @@ export default function Send() {
             required
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0"
-            className="text-right w-full outline-none font-semibold bg-transparent"
+            className="w-full text-right text-2xl outline-none font-bold bg-transparent text-[#212529]"
           />
-          <span className="ml-2 font-semibold">$</span>
+          <span className="ml-2 text-xl font-bold text-[#4361EE]">
+            {selectedToken === "cUSD"
+              ? "$"
+              : selectedToken === "cEUR"
+              ? "€"
+              : selectedToken === "cReal"
+              ? "R$"
+              : "C"}
+          </span>
         </div>
-      </div>
+        <div className="text-sm text-[#6C757D] mt-1 flex justify-end gap-2">
+          <span className="text-sm text-[#6C757D] font-medium">
+            Balance: {tokenBalance} {selectedToken}
+          </span>
+          <span className="text-sm text-[#6C757D] font-medium">
+            {Number(tokenBalance) < Number(amount) && (
+              <span className="text-[#FF006E]">Insufficient funds</span>
+            )}
+          </span>
+        </div>
+      </Card>
 
-      {/* Reason Input */}
-      <div className="bg-white rounded-[18px] px-4 py-3">
-        <label htmlFor="reason" className="text-sm text-black font-mono">
-          Reason
+      <Card className="rounded-xl p-5 bg-white gap-2">
+        <label htmlFor="reason" className="text-sm text-[#6C757D] font-medium">
+          Reason (Optional)
         </label>
         <textarea
           id="reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="write some reason here"
-          className="mt-1 w-full resize-none outline-none bg-transparent font-medium"
+          placeholder="Write a note here..."
+          className="mt-2 w-full h-10 resize-none outline-none bg-transparent font-medium text-[#212529]"
         />
-      </div>
+      </Card>
 
-      {/* Pay Button */}
       <button
         type="submit"
         disabled={loading}
-        className="bg-green-700 text-white rounded-[14px] py-3 font-semibold hover:bg-green-800 hover:text-white transition"
+        className={`w-full py-4 rounded-xl font-bold text-lg ${
+          loading
+            ? "bg-[#4361EE] opacity-70"
+            : "bg-[#4361EE] hover:bg-[#3A56D4]"
+        } text-white transition-colors shadow-md`}
       >
         {loading ? (
           <div className="flex items-center justify-center">
@@ -453,10 +557,10 @@ export default function Send() {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Paying...
+            Processing...
           </div>
         ) : (
-          "Pay"
+          `Send ${selectedToken}`
         )}
       </button>
     </form>

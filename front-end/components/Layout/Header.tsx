@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useConnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -9,6 +10,7 @@ import { useUser } from "@/context/UserContext";
 
 const Header = () => {
   const { connect } = useConnect();
+  const router = useRouter();
   const { name } = useUser();
   const [hideConnectBtn, setHideConnectBtn] = useState(false);
 
@@ -20,8 +22,8 @@ const Header = () => {
   }, []);
 
   return (
-    <div className="flex justify-between items-center px-4 mt-4 mb-6">
-      <div className="font-bold font-mono">Hello, {name}</div>
+    <div className="flex justify-between bg-[#4361EE] text-white p-4 rounded-b-2xl mb-4">
+      <h1 className="text-xl font-bold">Hello, {name}</h1>
       {!hideConnectBtn && (
         <ConnectButton
           showBalance={{
@@ -32,7 +34,7 @@ const Header = () => {
       )}
       <div className="flex gap-4">
         <Bell />
-        <ChartSpline />
+        <ChartSpline onClick={() => router.push("/report")} />
       </div>
     </div>
   );

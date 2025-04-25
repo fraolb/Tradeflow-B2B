@@ -7,6 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Card } from "@/components/ui/card";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { InformationCircleIcon } from "@heroicons/react/24/solid";
@@ -78,43 +79,49 @@ export default function Profile() {
   }, [name]);
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-4">
       {notification && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-100">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-100 max-w-md w-full">
           <Alert
-            className={`mt-12 p-2 px-4 w-full rounded-lg ${
-              notification.type === "success" ? "bg-green-500" : "bg-red-500"
+            className={`mt-12 p-4 w-full flex justify-center items-center text-center gap-2 rounded-xl shadow-lg ${
+              notification.type === "success" ? "bg-[#38B000]" : "bg-[#FF006E]"
             } text-white`}
           >
-            <InformationCircleIcon className="h-5 w-5 text-gray-100" />
-            <AlertTitle className="text-white">
+            <InformationCircleIcon className="h-5 w-5 text-white" />
+            <AlertTitle className="text-white font-medium">
               {notification.message}
             </AlertTitle>
           </Alert>
         </div>
       )}
-      <div>
-        <div className="bg-white rounded-[20px] px-4 py-6">
-          <label htmlFor="address" className="text-sm text-black font-mono">
-            Username
-          </label>
-          <input
-            id="address"
-            type="text"
-            value={username}
-            required
-            placeholder="Add username"
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full text-xl outline-none font-semibold bg-transparent"
-          />
-        </div>
-        <div className="flex justify-end mt-4">
+
+      <Card className="p-6 bg-white rounded-xl">
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor="username"
+              className="text-sm text-[#6C757D] font-medium"
+            >
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              required
+              placeholder="Enter your username"
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full mt-1 p-3 text-lg outline-none font-medium bg-[#F8F9FA] rounded-lg border border-[#E9ECEF] focus:border-[#4361EE]"
+            />
+          </div>
+
           <Button
-            className="bg-green-700 hover:bg-green-800"
             onClick={(e) => {
               e.preventDefault();
               updateUsernameFunction();
             }}
+            className="w-full bg-[#4361EE] hover:bg-[#3A56D4] text-white py-3 text-lg"
+            disabled={loading}
           >
             {loading ? (
               <div className="flex items-center justify-center">
@@ -141,94 +148,79 @@ export default function Profile() {
                 Updating...
               </div>
             ) : (
-              "Update"
+              "Update Username"
             )}
           </Button>
         </div>
-      </div>
-      <div>
-        <div className="font-bold font-mono text-center">
-          Frequently asked questions
-        </div>
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="item-1">
-            <AccordionTrigger className="border-b-1 border-black rounded-none">
-              What is the purpose of TradeFlow B2B?
-            </AccordionTrigger>
-            <AccordionContent>
-              TradeFlow B2B helps businesses use crypto for payments while
-              keeping proper financial records. It bridges the gap between
-              crypto and traditional bookkeeping by attaching business context
-              to each transaction.
-            </AccordionContent>
-          </AccordionItem>
+      </Card>
 
-          <AccordionItem value="item-2">
-            <AccordionTrigger className="border-b-1 border-black rounded-none">
-              Does it generate reports?
-            </AccordionTrigger>
-            <AccordionContent>
-              Yes. TradeFlow B2B generates detailed transaction reports,
-              including sender, receiver, purpose, amount, and timestamps. This
-              makes it easy to track and manage crypto payments for business
-              use.
-            </AccordionContent>
-          </AccordionItem>
+      <Card className="p-6 bg-white rounded-xl">
+        <h2 className="text-xl font-bold text-[#212529] mb-4 text-center">
+          Frequently Asked Questions
+        </h2>
 
-          <AccordionItem value="item-3">
-            <AccordionTrigger className="border-b-1 border-black rounded-none">
-              Is it free to use?
-            </AccordionTrigger>
-            <AccordionContent>
-              Yes, TradeFlow B2B is currently free to use. You only pay the
-              standard blockchain gas fees when making transactions.
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="item-4">
-            <AccordionTrigger className="border-b-1 border-black rounded-none">
-              How does TradeFlow B2B work with MiniPay?
-            </AccordionTrigger>
-            <AccordionContent>
-              TradeFlow B2B is fully optimized for MiniPay. You can access it
-              inside MiniPay, send payments using Mento stablecoins, and manage
-              your receipts — all from a mobile-first experience.
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="item-5">
-            <AccordionTrigger className="border-b-1 border-black rounded-none">
-              What currencies are supported?
-            </AccordionTrigger>
-            <AccordionContent>
-              TradeFlow B2B uses Mento stablecoins such as cUSD, cEUR, and
-              others. Only stablecoins are allowed for transactions, ensuring
-              price stability and usability for real-world business.
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="item-6">
-            <AccordionTrigger className="border-b-1 border-black rounded-none">
-              Where is the transaction data stored?
-            </AccordionTrigger>
-            <AccordionContent>
-              Core payment details are stored on-chain, including the sender,
-              receiver, amount, and reason.
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="item-7">
-            <AccordionTrigger className="border-b-1 border-black rounded-none">
-              Can I download or share receipts?
-            </AccordionTrigger>
-            <AccordionContent>
-              Yes. TradeFlow B2B lets you download and share receipts for every
-              transaction, making it easier to collaborate with accountants,
-              auditors, or partners.
-            </AccordionContent>
-          </AccordionItem>
+        <Accordion type="single" collapsible className="w-full space-y-2">
+          {[
+            {
+              value: "item-1",
+              question: "What is the purpose of TradeFlow B2B?",
+              answer:
+                "TradeFlow B2B helps businesses use crypto for payments while keeping proper financial records. It bridges the gap between crypto and traditional bookkeeping by attaching business context to each transaction.",
+            },
+            {
+              value: "item-2",
+              question: "Does it generate reports?",
+              answer:
+                "Yes. TradeFlow B2B generates detailed transaction reports, including sender, receiver, purpose, amount, and timestamps. This makes it easy to track and manage crypto payments for business use.",
+            },
+            {
+              value: "item-3",
+              question: "Is it free to use?",
+              answer:
+                "Yes, TradeFlow B2B is currently free to use. You only pay the standard blockchain gas fees when making transactions.",
+            },
+            {
+              value: "item-4",
+              question: "How does TradeFlow B2B work with MiniPay?",
+              answer:
+                "TradeFlow B2B is fully optimized for MiniPay. You can access it inside MiniPay, send payments using Mento stablecoins, and manage your receipts — all from a mobile-first experience.",
+            },
+            {
+              value: "item-5",
+              question: "What currencies are supported?",
+              answer:
+                "TradeFlow B2B uses Mento stablecoins such as cUSD, cEUR, and others. Only stablecoins are allowed for transactions, ensuring price stability and usability for real-world business.",
+            },
+            {
+              value: "item-6",
+              question: "Where is the transaction data stored?",
+              answer:
+                "Core payment details are stored on-chain, including the sender, receiver, amount, and reason.",
+            },
+            {
+              value: "item-7",
+              question: "Can I download or share receipts?",
+              answer:
+                "Yes. TradeFlow B2B lets you download and share receipts for every transaction, making it easier to collaborate with accountants, auditors, or partners.",
+            },
+          ].map((item) => (
+            <AccordionItem
+              key={item.value}
+              value={item.value}
+              className="border-b border-[#E9ECEF]"
+            >
+              <AccordionTrigger className="py-3 hover:no-underline">
+                <span className="text-left font-medium text-[#212529]">
+                  {item.question}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="text-[#6C757D] pb-3">
+                {item.answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
         </Accordion>
-      </div>
+      </Card>
     </div>
   );
 }

@@ -47,21 +47,25 @@ const TransactionCard = ({
   }, []);
 
   return (
-    <div>
-      <Card className="w-full bg-gray-50 flex flex-row justify-beteween px-2 py-2 mb-2 gap-2">
-        {Tx.txType == 0 ? (
-          <div className="text-red-700 pt-1">
-            <ArrowUpCircleIcon className="w-10 h-10" />
-          </div>
-        ) : (
-          <div className="text-green-700 pt-1">
-            <ArrowDownCircleIcon className="w-10 h-10" />
-          </div>
-        )}
+    <Card className="w-full bg-white p-4 py-2 rounded-xl mb-3 hover:bg-[#F8F9FA] transition-colors">
+      <div className="flex items-center justify-between gap-3">
+        <div
+          className={`p-3 rounded-full ${
+            Tx.txType == 0
+              ? "bg-[#FF006E]/10 text-[#FF006E]"
+              : "bg-[#38B000]/10 text-[#38B000]"
+          }`}
+        >
+          {Tx.txType == 0 ? (
+            <ArrowUpCircleIcon className="w-6 h-6" />
+          ) : (
+            <ArrowDownCircleIcon className="w-6 h-6" />
+          )}
+        </div>
 
-        <div className="block w-4/6 md:w-4/5">
-          <div className="truncate">
-            {Tx.reason !== "" ? Tx.reason : Tx.counterparty}
+        <div className="flex-1 min-w-0">
+          <div className="text-[#212529] font-medium truncate">
+            {Tx.reason || Tx.counterparty || "Unknown Transaction"}
           </div>
           <a
             href={
@@ -71,31 +75,26 @@ const TransactionCard = ({
             }
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-700 underline text-sm"
-          >{`${txHash.slice(0, 6)}...${txHash.slice(-4)}`}</a>
+            className="text-[#4361EE] text-sm hover:underline"
+          >
+            {`${txHash.slice(0, 6)}...${txHash.slice(-4)}`}
+          </a>
         </div>
 
-        {Tx.txType == 0 ? (
-          <span className="w-1/5 text-red-700 pt-2 text-center">
-            -{" "}
-            {(Number(Tx.amount) / 1e18).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}{" "}
-            $
-          </span>
-        ) : (
-          <span className="w-1/5 text-green-700 pt-2 text-center">
-            +{" "}
-            {(Number(Tx.amount) / 1e18).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}{" "}
-            $
-          </span>
-        )}
-      </Card>
-    </div>
+        <div
+          className={`text-right font-semibold ${
+            Tx.txType == 0 ? "text-[#FF006E]" : "text-[#38B000]"
+          }`}
+        >
+          {Tx.txType == 0 ? "-" : "+"}{" "}
+          {(Number(Tx.amount) / 1e18).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+          <span className="text-[#6C757D]"> $</span>
+        </div>
+      </div>
+    </Card>
   );
 };
 

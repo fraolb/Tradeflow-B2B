@@ -7,6 +7,8 @@ import { useAccount } from "wagmi";
 import { ethers } from "ethers";
 import { getTokenAmount } from "@/lib/ContractFunctions";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 // Supported tokens in the Mento protocol
 const CELO_SUPPORTED_TOKENS = [
@@ -216,149 +218,177 @@ export default function SwapPage() {
   };
 
   return (
-    <div className="min-h-screen sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto rounded-xl overflow-hidden md:max-w-4xl lg:max-w-2xl">
-        <div>
-          <div className="flex justify-center items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Tradeflow Swap</h2>
-          </div>
+    <div className="min-h-screen bg-[#F8F9FA]">
+      <div className="max-w-md mx-auto">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-[#212529]">TradeFlow Swap</h2>
+        </div>
 
-          <div className="bg-white rounded-[20px] px-4 py-6 mb-4 shadow-md">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              From
-            </label>
-            <div className="flex justify-between">
-              <input
-                type="number"
-                className="text-lg w-3/4 outline-none font-semibold bg-transparent"
-                placeholder="0.0"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-              <select
-                className="inline-flex items-center px-3 py-2 border border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-md"
-                value={fromToken.symbol}
-                onChange={(e) =>
-                  setFromToken(
-                    supportedToken.find((t) => t.symbol === e.target.value) ||
-                      fromToken
-                  )
-                }
-              >
-                {supportedToken.map((token) => (
-                  <option key={`from-${token.symbol}`} value={token.symbol}>
+        <Card className="p-5 bg-white rounded-xl mb-4 gap-2">
+          <label className="block text-sm font-medium text-[#6C757D] mb-2">
+            From
+          </label>
+          <div className="flex items-center justify-between">
+            <input
+              type="number"
+              className="text-2xl w-3/4 outline-none font-bold bg-transparent text-[#212529]"
+              placeholder="0.0"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+            <select
+              className="px-3 py-2 border border-[#E9ECEF] bg-[#F8F9FA] text-[#212529] text-sm rounded-lg"
+              value={fromToken.symbol}
+              onChange={(e) =>
+                setFromToken(
+                  supportedToken.find((t) => t.symbol === e.target.value) ||
+                    fromToken
+                )
+              }
+            >
+              {supportedToken.map((token) => (
+                <option key={`from-${token.symbol}`} value={token.symbol}>
+                  {token.symbol}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div
+            className="flex mt-2 justify-end gap-2 text-sm text-[#4361EE] cursor-pointer hover:text-[#3A56D4]"
+            onClick={() => setAmount(fromTokenBalance)}
+          >
+            <span>Use Max</span>
+            <span>{Number(fromTokenBalance).toFixed(2)}</span>
+          </div>
+        </Card>
+
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={switchTokens}
+            className="p-3 bg-white rounded-full shadow-md hover:bg-[#F8F9FA] transition-colors"
+            aria-label="Switch tokens"
+          >
+            <ArrowsUpDownIcon className="w-6 h-6 text-[#4361EE]" />
+          </button>
+        </div>
+
+        <Card className="p-5 bg-white rounded-xl mb-4 gap-2">
+          <label className="block text-sm font-medium text-[#6C757D] mb-2">
+            To (Estimated)
+          </label>
+          <div className="flex items-center justify-between">
+            <input
+              type="text"
+              className="text-2xl w-3/4 outline-none font-bold bg-transparent text-[#212529]"
+              placeholder="0.0"
+              value={Number(expectedOutput).toFixed(4) || ""}
+              readOnly
+            />
+            <select
+              className="px-3 py-2 border border-[#E9ECEF] bg-[#F8F9FA] text-[#212529] text-sm rounded-lg"
+              value={toToken.symbol}
+              onChange={(e) =>
+                setToToken(
+                  supportedToken.find((t) => t.symbol === e.target.value) ||
+                    toToken
+                )
+              }
+            >
+              {supportedToken
+                .filter((t) => t.symbol !== fromToken.symbol)
+                .map((token) => (
+                  <option key={`to-${token.symbol}`} value={token.symbol}>
                     {token.symbol}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div
-              className="flex mt-2 justify-end gap-2 text-sm text-gray-500 cursor-pointer hover:text-blue-500"
-              onClick={() => setAmount(fromTokenBalance)}
-            >
-              <div>Use Max</div>
-              <div>{Number(fromTokenBalance).toFixed(2)}</div>
-            </div>
+            </select>
           </div>
+        </Card>
 
-          <div className="flex justify-center mb-4">
-            <button
-              onClick={switchTokens}
-              className="p-2 bg-white rounded-full hover:bg-gray-200 transition-colors"
-              aria-label="Switch tokens"
-            >
-              <ArrowsUpDownIcon className="w-6 h-6 text-gray-600" />
-            </button>
-          </div>
+        {exchangeRate && (
+          <Card className="p-4 bg-[#F8F9FA] rounded-lg mb-6">
+            <div className="flex justify-between text-sm text-[#6C757D]">
+              <span>Exchange Rate:</span>
+              <span className="font-medium text-[#212529]">
+                1 {fromToken.symbol} ={" "}
+                {(parseFloat(exchangeRate) / parseFloat(amount)).toFixed(6)}{" "}
+                {toToken.symbol}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm text-[#6C757D] mt-2">
+              <span>Expected Output:</span>
+              <span className="font-medium text-[#212529]">
+                {parseFloat(expectedOutput || "0").toFixed(6)} {toToken.symbol}
+              </span>
+            </div>
+          </Card>
+        )}
 
-          <div className="bg-white rounded-[20px] px-4 py-6 mb-4 shadow-md">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              To (Estimated)
-            </label>
-            <div className="flex justify-between">
-              <input
-                type="text"
-                className="text-lg w-3/4 outline-none font-semibold bg-transparent"
-                placeholder="0.0"
-                value={expectedOutput || ""}
-                readOnly
-              />
-              <select
-                className="inline-flex items-center px-3 py-2 border border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-md"
-                value={toToken.symbol}
-                onChange={(e) =>
-                  setToToken(
-                    supportedToken.find((t) => t.symbol === e.target.value) ||
-                      toToken
-                  )
-                }
+        <Button
+          onClick={handleSwap}
+          disabled={!amount || !expectedOutput || loading}
+          className={`w-full py-4 rounded-xl text-lg font-bold ${
+            !amount || !expectedOutput || loading
+              ? "bg-[#4361EE]/70 cursor-not-allowed"
+              : "bg-[#4361EE] hover:bg-[#3A56D4]"
+          }`}
+        >
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <svg
+                className="animate-spin h-5 w-5 mr-3 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
               >
-                {supportedToken
-                  .filter((t) => t.symbol !== fromToken.symbol)
-                  .map((token) => (
-                    <option key={`to-${token.symbol}`} value={token.symbol}>
-                      {token.symbol}
-                    </option>
-                  ))}
-              </select>
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Processing...
             </div>
-          </div>
-
-          {exchangeRate && (
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Exchange Rate:</span>
-                <span className="font-medium">
-                  1 {fromToken.symbol} = {parseFloat(exchangeRate).toFixed(6)}{" "}
-                  {toToken.symbol}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm text-gray-600 mt-1">
-                <span>Expected Output:</span>
-                <span className="font-medium">
-                  {parseFloat(expectedOutput || "0").toFixed(6)}{" "}
-                  {toToken.symbol}
-                </span>
-              </div>
-            </div>
+          ) : !address ? (
+            "Connect Wallet"
+          ) : (
+            `Swap ${fromToken.symbol} to ${toToken.symbol}`
           )}
+        </Button>
 
-          <button
-            onClick={handleSwap}
-            disabled={!amount || !expectedOutput || loading}
-            className={`w-full py-3 px-4 rounded-md text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-              !amount || !expectedOutput || loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-            }`}
-          >
-            {loading
-              ? "Processing..."
-              : !address
-              ? "Connect Wallet"
-              : `Swap ${fromToken.symbol} to ${toToken.symbol}`}
-          </button>
+        {error && (
+          <Card className="mt-4 p-4 bg-[#FF006E]/10 border border-[#FF006E]/20">
+            <div className="text-[#FF006E] text-sm">{error}</div>
+          </Card>
+        )}
 
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-md text-sm">
-              {error}
-            </div>
-          )}
-
-          {txHash && (
-            <div className="mt-4 p-3 bg-green-50 text-green-600 rounded-md text-sm">
+        {txHash && (
+          <Card className="mt-4 p-4 bg-[#38B000]/10 border border-[#38B000]/20">
+            <div className="text-[#38B000] text-sm">
               Swap successful!{" "}
               <a
-                href={`https://explorer.celo.org/tx/${txHash}`}
+                href={
+                  chainId == 42220
+                    ? `https://explorer.celo.org/tx/${txHash}`
+                    : `https://celo-alfajores.blockscout.com/tx/${txHash}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline hover:text-green-700"
+                className="underline hover:text-[#38B000]/80"
               >
                 View on Celo Explorer
               </a>
             </div>
-          )}
-        </div>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -99,7 +99,7 @@ export default function Report() {
         {transactions.length > 0 ? (
           <Button
             onClick={() => handlePDF()}
-            className="bg-green-700 hover:bg-green-800"
+            className="bg-[#4361EE] hover:bg-[#3A56D4] text-white h-14 flex flex-col items-center justify-center gap-1"
             disabled={transactions.length === 0}
           >
             {loadingReport ? (
@@ -132,7 +132,7 @@ export default function Report() {
           </Button>
         ) : (
           <Button
-            className="bg-green-700 hover:bg-green-800"
+            className="bg-[#4361EE] hover:bg-[#3A56D4] text-white h-14 flex flex-col items-center justify-center gap-1"
             disabled={loadingReport}
             onClick={() => generateReport()}
           >
@@ -167,9 +167,8 @@ export default function Report() {
         )}
       </div>
       <div className="w-full">
-        <div className="flex justify-between px-2 mb-2">
-          <h3 className="font-bold font-mono">Latest Transactions</h3>
-          {/* <div className="font-light">See all</div> */}
+        <div className="flex justify-center items-center mb-3 text-center">
+          <h3 className="text-[#212529] font-bold">All Transactions</h3>
         </div>
         <div>
           {loading && (

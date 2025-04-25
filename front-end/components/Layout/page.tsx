@@ -10,7 +10,7 @@ const Layout: FC<Props> = ({ children }) => {
   return (
     <>
       <div
-        style={{ backgroundColor: "rgb(213,237,213)" }}
+        style={{ backgroundColor: "#F8F9FA" }}
         className="overflow-hidden flex flex-col min-h-screen"
       >
         <Header />
