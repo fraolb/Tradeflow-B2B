@@ -93,7 +93,7 @@ export const getTokenAmount = async (
     address: token as `0x${string}`,
     abi: cUSDABI,
     functionName: "balanceOf",
-    args: [address!],
+    args: [address],
   });
 
   const formatted = result ? formatUnits(result as bigint, 18) : "0";
