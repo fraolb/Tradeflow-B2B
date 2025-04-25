@@ -75,7 +75,12 @@ export default function Home() {
       <div className="mb-6">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-[#212529] font-bold">Latest Transactions</h3>
-          <button className="text-[#4361EE] text-sm">See all</button>
+          <button
+            className="text-[#4361EE] text-sm"
+            onClick={() => router.push("/report")}
+          >
+            See all
+          </button>
         </div>
 
         {loading ? (
