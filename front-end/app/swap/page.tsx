@@ -45,12 +45,16 @@ export default function SwapPage() {
 
   useEffect(() => {
     if (!address) return;
-    if (chainId == 42220) {
-      setSupportedToken(CELO_SUPPORTED_TOKENS);
-    } else {
-      setSupportedToken(ALFAJORES_SUPPORTED_TOKENS);
-    }
-  }, [address]);
+
+    const newSupportedTokens =
+      chainId == 42220 ? CELO_SUPPORTED_TOKENS : ALFAJORES_SUPPORTED_TOKENS;
+
+    setSupportedToken(newSupportedTokens);
+
+    // Reset the token selections when the chain changes
+    setFromToken(newSupportedTokens[1]);
+    setToToken(newSupportedTokens[2]);
+  }, [address, chainId]);
 
   // Initialize Mento SDK
   useEffect(() => {
