@@ -23,15 +23,17 @@ const Header = () => {
 
   return (
     <div className="flex justify-between bg-[#4361EE] text-white p-4 rounded-b-2xl mb-4">
-      <h1 className="text-xl font-bold">Hello, {name}</h1>
-      {!hideConnectBtn && (
-        <ConnectButton
-          showBalance={{
-            smallScreen: true,
-            largeScreen: false,
-          }}
-        />
-      )}
+      <div className="block md:flex md:w-2/3 md:justify-between ">
+        <h1 className="text-xl font-bold">Hello, {name}</h1>
+        {!hideConnectBtn && (
+          <ConnectButton
+            showBalance={{
+              smallScreen: true,
+              largeScreen: false,
+            }}
+          />
+        )}
+      </div>
       <div className="flex gap-4">
         <Bell />
         <ChartSpline onClick={() => router.push("/report")} />
