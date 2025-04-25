@@ -503,7 +503,7 @@ export default function Send() {
         </div>
         <div className="text-sm text-[#6C757D] mt-1 flex justify-end gap-2">
           <span className="text-sm text-[#6C757D] font-medium">
-            Balance: {tokenBalance} {selectedToken}
+            Balance: {Number(tokenBalance).toFixed(3)} {selectedToken}
           </span>
           <span className="text-sm text-[#6C757D] font-medium">
             {Number(tokenBalance) < Number(amount) && (
@@ -533,7 +533,7 @@ export default function Send() {
           loading
             ? "bg-[#4361EE] opacity-70"
             : "bg-[#4361EE] hover:bg-[#3A56D4]"
-        } text-white transition-colors shadow-md`}
+        } text-white transition-colors shadow-md mb-8`}
       >
         {loading ? (
           <div className="flex items-center justify-center">

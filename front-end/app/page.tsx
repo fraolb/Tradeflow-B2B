@@ -103,7 +103,7 @@ export default function Home() {
 
       <div>
         <h3 className="text-[#212529] font-bold mb-3">Currency</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <Card className="p-4 bg-white rounded-xl text-center gap-2">
             <div className="text-[#38B000] mx-auto">
               <CurrencyDollarIcon className="w-8 h-8" />
