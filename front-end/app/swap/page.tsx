@@ -194,7 +194,7 @@ export default function SwapPage() {
 
       // Refresh balances after successful swap
       const updatedBalance = await getTokenAmount(address, fromToken.address);
-      setTokenBalance(updatedBalance);
+      setFromTokenBalance(updatedBalance);
 
       setAmount("");
       setExchangeRate(null);
