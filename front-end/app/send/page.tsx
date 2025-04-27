@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { getTokenAmount } from "@/lib/ContractFunctions";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { InformationCircleIcon } from "@heroicons/react/24/solid";
+import { createNotification } from "@/lib/NotificationFunctions";
 
 interface notificationInterfact {
   message: string;
@@ -81,6 +82,20 @@ export default function Send() {
         amount,
         reason
       );
+
+      const notificationData = {
+        walletAddress: receiverAddress,
+        senderAddress: address as string,
+        amount: amount,
+        type: chainId == 42220 ? "Mainnet" : "Testnet",
+        token: selectedToken,
+        hashLink: Pay,
+        description: reason,
+      };
+
+      const newNotification = await createNotification(notificationData);
+
+      console.log("Notification created:", newNotification);
 
       // Construct sentTx manually
       setSentTx({
