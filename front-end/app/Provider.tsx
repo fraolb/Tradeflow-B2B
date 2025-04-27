@@ -13,6 +13,7 @@ import { celo, celoAlfajores } from "wagmi/chains";
 import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
 import Layout from "@/components/Layout/page";
 import { UserProvider } from "@/context/UserContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 
 const connectors = connectorsForWallets(
   [
@@ -45,7 +46,9 @@ export function Provider({ children }: { children: React.ReactNode }) {
         <RainbowKitProvider>
           <UserProvider>
             {" "}
-            <Layout>{children}</Layout>
+            <NotificationProvider>
+              <Layout>{children}</Layout>
+            </NotificationProvider>
           </UserProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
