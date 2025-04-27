@@ -25,6 +25,7 @@
     "ethers": "^5.7.2",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.488.0",
+    "mongoose": "^8.14.0",
     "next": "15.3.0",
     "pino-pretty": "^13.0.0",
     "qrcode.react": "^4.2.0",
