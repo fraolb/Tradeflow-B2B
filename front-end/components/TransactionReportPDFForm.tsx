@@ -124,7 +124,14 @@ export const TransactionReport = ({
           </Text>
           <Text style={[styles.tableCol, { flex: 3 }]}>{tx.reason}</Text>
           <Text style={[styles.tableCol, { flex: 1 }]}>
-            ${(tx.amount / 1e18).toFixed(2)}
+            {(tx.amount / 1e18).toFixed(2)}&nbsp;
+            {tx.stablecoin == "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1" ||
+            "0x765DE816845861e75A25fCA122bb6898B8B1282a"
+              ? "cUSD"
+              : tx.stablecoin == "0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F" ||
+                "0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73"
+              ? "cEUR"
+              : "cReal"}
           </Text>
           <View style={[styles.tableCol, { flex: 2 }]}>
             <Link

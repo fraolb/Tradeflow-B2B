@@ -166,7 +166,7 @@ export default function Report() {
           </Button>
         )}
       </div>
-      <div className="w-full">
+      <div className="w-full pb-8">
         <div className="flex justify-center items-center mb-3 text-center">
           <h3 className="text-[#212529] font-bold">All Transactions</h3>
         </div>

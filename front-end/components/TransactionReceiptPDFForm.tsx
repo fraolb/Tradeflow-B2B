@@ -75,6 +75,7 @@ interface TxData {
   to: string;
   reason: string | null;
   amount: number;
+  token: string;
   link: string;
   hash: string;
 }
@@ -92,7 +93,9 @@ export const TransactionReceipt = ({
       <View style={styles.section}>
         <View style={styles.amountBox}>
           <Text style={styles.label}>Amount Paid:</Text>
-          <Text style={styles.value}>${transaction.amount.toFixed(2)}</Text>
+          <Text style={styles.value}>
+            {transaction.amount.toFixed(2)}&nbsp;{transaction.token}
+          </Text>
         </View>
 
         <View style={styles.row}>

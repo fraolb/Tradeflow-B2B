@@ -29,6 +29,7 @@ interface TransactionInterface {
   to: string;
   reason: string | null;
   amount: number;
+  token: string;
   link: string;
   hash: string;
 }
@@ -105,7 +106,7 @@ export default function Send() {
         to: receiverAddress,
         reason,
         amount: parseFloat(amount),
-
+        token: selectedToken,
         link:
           chainId == 42220
             ? `https://celoscan.io/tx/${Pay}`
